@@ -19,12 +19,14 @@ def read_region(filename, style="ds9"):
             pass
         else:
             purified.append(line.strip().split("#")[0].strip())
+    # TODO Now only support ds9 format
     if style == "ds9":
-        for line in purified:
+        #frame = purified[1]
+        for line in purified[2:]:
             if "global" in line:
                 pass
             elif line in ["image", "physical", "amplifier", "detector",
-                          "fk4", "fk5", "icrs", "galactic", "ecliptic"]:
+                          "fk4", "fk5", "icrs", "galactic", "ecliptic", "wcs"]:
                 frame = line
             elif "epanda" in line:
                 if line[0] == "-":

@@ -9,10 +9,10 @@ class Image(object):
     def __init__(self, image):
         self._load_image(image)
 
-    def _load_image(self, image):
+    def _load_image(self, image, extension=0):
         # Load image from fits file or from an HDU.
         if isinstance(image, str):
-            self.header, self.data = load_image(image)
+            self.header, self.data = load_image(image, extension=extension)
             assert isinstance(self.header, fits.header.Header)
         elif isinstance(image, fits.PrimaryHDU) or isinstance(image, fits.ImageHDU):
             self.header = image.header
@@ -29,8 +29,8 @@ class Image(object):
 
 class CtsImage(Image):
 
-    def __init__(self, image):
-        self._load_image(image)
+    def __init__(self, image, extension=0):
+        self._load_image(image, extension=extension)
         self._load_parameter()
 
     def _load_parameter(self):
@@ -39,13 +39,13 @@ class CtsImage(Image):
 
 class BkgImage(Image):
 
-    def __init__(self, image, norm="bkgnorm", norm_type="count"):
+    def __init__(self, image, norm="bkgnorm", norm_type="count", extension=0):
         """
         There are two types of normalisation:
             One is a ratio between counts rates. In this case we need additional information from exposure time.
             Another one is a ratio bewteen counts numbers.
         """
-        self._load_image(image)
+        self._load_image(image, extension=extension)
         self.norm_keyword = norm
         self.norm_type = norm_type
         self._load_parameter()
@@ -60,8 +60,8 @@ class BkgImage(Image):
 
 class ExpImage(Image):
 
-    def __init__(self, image):
-        self._load_image(image)
+    def __init__(self, image, extension=0):
+        self._load_image(image, extension=extension)
         self.unit = "s"
         try:
             self.unit = self.header["BUNIT"]
@@ -72,21 +72,22 @@ class ExpImage(Image):
 class ImageList(object):
     itype = None
 
-    def __init__(self, *image_list):
+    def __init__(self, *image_list, extension=0):
         self.images = []
         self.data = []
         self.headers = []
         self.wcses = []
-        self._load_data(*image_list)
+        self._load_data(*image_list, extension=extension)
 
-    def _load_data(self, *image_list):
+    def _load_data(self, *image_list, extension):
         for image in image_list:
             if self.itype == "counts":
-                self.images.append(CtsImage(image))
+                self.images.append(CtsImage(image, extension=extension))
             elif self.itype == "exposure":
-                self.images.append(ExpImage(image))
+                self.images.append(ExpImage(image, extension=extension))
             elif self.itype == "background":
-                self.images.append(BkgImage(image, norm=self.norm_keyword, norm_type=self.norm_type))
+                self.images.append(
+                    BkgImage(image, norm=self.norm_keyword, norm_type=self.norm_type, extension=extension))
         for image in self.images:
             self.data.append(image.data)
             self.headers.append(image.header)
@@ -97,8 +98,8 @@ class ImageList(object):
 class CtsImageList(ImageList):
     itype = "counts"
 
-    def __init__(self, *image_list):
-        super().__init__(*image_list)
+    def __init__(self, *image_list, extension=0):
+        super().__init__(*image_list, extension=extension)
         self.exptime = []
         for image in self.images:
             self.exptime += [image.exptime]
@@ -107,8 +108,8 @@ class CtsImageList(ImageList):
 class ExpImageList(ImageList):
     itype = "exposure"
 
-    def __init__(self, *image_list):
-        super().__init__(*image_list)
+    def __init__(self, *image_list, extension=0):
+        super().__init__(*image_list, extension=extension)
         self.unit = []
         for image in self.images:
             self.unit += [image.unit]
@@ -117,10 +118,10 @@ class ExpImageList(ImageList):
 class BkgImageList(ImageList):
     itype = "background"
 
-    def __init__(self, *image_list, norm="bkgnorm", norm_type="count"):
+    def __init__(self, *image_list, norm="bkgnorm", norm_type="count", extension=0):
         self.norm_keyword = norm
         self.norm_type = norm_type
-        super().__init__(*image_list)
+        super().__init__(*image_list, extension=extension)
         self.bkgnorm = []
         self.exptime = []
         for image in self.images:
