@@ -20,23 +20,28 @@ def read_region(filename, style="ds9"):
         else:
             purified.append(line.strip().split("#")[0].strip())
     # TODO Now only support ds9 format
+    region_types = {"circle": Circle, "panda": Panda, "epanda": Epanda}
+    region_list = RegionList()
     if style == "ds9":
-        #frame = purified[1]
+        frame = purified[1]
         for line in purified[2:]:
-            if "global" in line:
-                pass
-            elif line in ["image", "physical", "amplifier", "detector",
-                          "fk4", "fk5", "icrs", "galactic", "ecliptic", "wcs"]:
-                frame = line
-            elif "epanda" in line:
-                if line[0] == "-":
-                    status: str = "-"
-                else:
-                    status = "+"
-                parameters = line.split("(")[1].split(")")[0].split(",")
+            if line[0] == "-":
+                status: str = "SUB"
+                rtype = line[1:].split("(")[0]
             else:
-                print(f"Unsupported region type: {line}")
-    return Epanda(frame, *parameters, status)
+                status = "ADD"
+                rtype = line.split("(")[0]
+            parameters = line.split("(")[1].split(")")[0].split(",")
+            if rtype not in ["circle", "epanda", "panda"]:
+                print(f"Unsupported region type: {rtype}")
+            else:
+                if status == "ADD":
+                    region_list.add = region_types[rtype](frame, *parameters, status)
+                elif status == "SUB":
+                    region_list.sub += [region_types[rtype](frame, *parameters, status)]
+    else:
+        raise TypeError("So far, we only support ds9 format.")
+    return region_list
     # TODO Now only support one region per file.
 
 
@@ -46,16 +51,34 @@ class Region(object):
         self.status = "ADD"
 
 
+class Circle(Region):
+
+    def __init__(self, frame="image", x=0, y=0, radius=1, status="ADD"):
+        super().__init__()
+        self.frame = frame
+        self.status = status
+        if frame == "image":
+            # Now the unit of coordinates is pixel.
+            self.x = float(x)
+            self.y = float(y)
+            self.radius = float(radius)
+        elif frame in ["fk4", "fk5", "icrs", "galactic", "ecliptic"]:
+            center: coordinates.SkyCoord = coordinates.SkyCoord(x, y, frame=frame, unit=(units.hourangle, units.deg))
+            self.x = center.ra
+            self.y = center.dec
+            if radius[-1] == '"':
+                self.radius = float(radius[:-1]) * units.arcsec
+            else:
+                raise TypeError("Sky coordinate unit must be arcsec.")
+
+
 class Epanda(Region):
 
     def __init__(self, frame="image", x=0, y=0, startangle=0, stopangle=360, nangle=1, innermajor=0, innerminor=0,
-                 outermajor=100, outerminor=100, nradius=1, angle=0, status="+"):
+                 outermajor=100, outerminor=100, nradius=1, angle=0, status="ADD"):
         super().__init__()
         self.frame = frame
-        if status == "+":
-            self.status = "ADD"
-        elif status == "-":
-            self.status = "SUB"
+        self.status = status
         self.startangle = float(startangle)
         self.stopangle = float(stopangle)
         self.nangle = int(nangle)
@@ -80,3 +103,43 @@ class Epanda(Region):
                 self.outerminor = float(outerminor[:-1]) * units.arcsec
             else:
                 raise TypeError
+
+
+class Panda(Region):
+
+    def __init__(self, frame="image", x=0, y=0, startangle=0, stopangle=360, nangle=1, inner=0,
+                 outer=100, nradius=1, status="ADD"):
+        super().__init__()
+        self.frame = frame
+        self.status = status
+        self.startangle = float(startangle)
+        self.stopangle = float(stopangle)
+        self.nangle = int(nangle)
+        self.nradius = int(nradius)
+        self.angle = 0.0
+        if frame == "image":
+            # Now the unit of coordinates is pixel.
+            self.x = float(x)
+            self.y = float(y)
+            self.innermajor = float(inner)
+            self.innerminor = float(inner)
+            self.outermajor = float(outer)
+            self.outerminor = float(outer)
+        elif frame in ["fk4", "fk5", "icrs", "galactic", "ecliptic"]:
+            center: coordinates.SkyCoord = coordinates.SkyCoord(x, y, frame=frame, unit=(units.hourangle, units.deg))
+            self.x = center.ra
+            self.y = center.dec
+            if inner[-1] == '"':
+                self.innermajor = float(inner[:-1]) * units.arcsec
+                self.innerminor = float(inner[:-1]) * units.arcsec
+                self.outermajor = float(outer[:-1]) * units.arcsec
+                self.outerminor = float(outer[:-1]) * units.arcsec
+            else:
+                raise TypeError("Sky coordinate unit must be arcsec.")
+
+
+class RegionList(object):
+
+    def __init__(self):
+        self.add = Region()
+        self.sub = []

@@ -2,8 +2,9 @@ import numpy as np
 from astropy.wcs import WCS
 from astropy.wcs.utils import proj_plane_pixel_scales
 from astropy.table import Table, vstack, hstack
+from .region import Epanda, Panda, Circle
 from .exception import *
-from .utils import xy2elliptic, weighted_average
+from .utils import xy2elliptic, isincircle
 from .image import CtsImageList, ExpImageList, BkgImageList
 
 
@@ -13,7 +14,7 @@ class DataSet(object):
     expimages: ExpImageList
     bkgimages: BkgImageList
 
-    def __init__(self, ctsimagelist, expimagelist, bkgimagelist, *regions):
+    def __init__(self, ctsimagelist, expimagelist, bkgimagelist, region_list):
         self.data = Table()
         nctsimage = len(ctsimagelist.data)
         nexpimage = len(expimagelist.data)
@@ -24,27 +25,19 @@ class DataSet(object):
             raise MismatchingError("Number of exposure maps is not equal to number of count maps.")
         if nctsimage != nbkgimage:
             raise MismatchingError("Number of background maps is not equal to number of count maps.")
-        if len(regions) == 0:
-            raise InvalidNumberError("Number of regions should not be zero.")
         self.ctsimages = ctsimagelist
         self.expimages = expimagelist
         self.bkgimages = bkgimagelist
         self.xscale = 1.
         self.yscale = 1.
         # Check region numbers.
-        n_add = 0
-        self.sub_region = []
-        for region in regions:
-            if region.status == "ADD":
-                self.add_region = region
-                n_add += 1
-            elif region.status == "SUB":
-                self.sub_region += [region]
-        if n_add != 1:
-            raise InvalidNumberError("Only one positive region is allowed.")
+        self.add_region = region_list.add
+        self.sub_region = region_list.sub
         # Check region frame.
         if self.add_region.frame not in ["fk4", "fk5", "icrs", "galactic", "ecliptic"]:
             warnings.warn("The coordinate frame is not celestial.")
+        if not (isinstance(self.add_region, Panda) or isinstance(self.add_region, Epanda)):
+            raise TypeError("Add region must be Panda or Epanda")
         self.get_data()
 
     def get_data(self):
@@ -69,6 +62,8 @@ class DataSet(object):
         for i in range(len(self.ctsimages.data)):
             wcs: WCS = self.ctsimages.wcses[i]
             ly, lx = self.ctsimages.data[i].shape
+            xcoor, ycoor = np.meshgrid(np.arange(lx) + 1., np.arange(ly) + 1.)
+            subtraction_mask = np.zeros_like(xcoor)
             if add_region.frame in ["fk4", "fk5", "icrs", "galactic", "ecliptic"]:
                 # Region coordinates transfer.
                 x0, y0 = wcs.all_world2pix(np.array([[add_region.x.value, add_region.y.value]]), 1)[0]
@@ -80,15 +75,22 @@ class DataSet(object):
                 outermajor = add_region.outermajor.value / 3600 / xscale  # Unit: pixel
                 outerminor = add_region.outerminor.value / 3600 / xscale
                 innermajor = add_region.innermajor.value / 3600 / xscale
-                # innerminor = self.add_region.innerminor.value / 3600 / xscale
+                innerminor = add_region.innerminor.value / 3600 / xscale
+                for sub_region in self.sub_region:
+                    if isinstance(sub_region, Circle):
+                        xsub, ysub = wcs.all_world2pix(np.array([[sub_region.x.value, sub_region.y.value]]), 1)[0]
+                        rsub = sub_region.radius.value / 3600 / xscale
+                        subtraction_mask = np.logical_or(isincircle(xcoor, ycoor, xsub, ysub, rsub), subtraction_mask)
+                    else:
+                        warnings.warn("So far only Circle subtraction region is supported.")
             else:
                 # TODO Add features for non-celestial regions.
                 pass
-            xcoor, ycoor = np.meshgrid(np.arange(lx) + 1., np.arange(ly) + 1.)
             az, r_pix = xy2elliptic(xcoor, ycoor, x0, y0, outermajor, outerminor, add_region.angle, startangle,
                                     stopangle)
             exist_mask = (self.expimages.data[i] * 1.) > 0
-            #rad_mask = np.logical_and(r_pix >= innermajor, r_pix < outermajor)
+            exist_mask = np.logical_and(exist_mask, np.logical_not(subtraction_mask))
+            # rad_mask = np.logical_and(r_pix >= innermajor, r_pix < outermajor)
             rad_mask = r_pix >= innermajor
             if stopangle > 360:
                 az_mask = np.logical_or(az >= startangle, az < stopangle - 360)
@@ -145,7 +147,7 @@ class DataSet(object):
             for i in range(len(channels)):
                 channels[i] = data["r"][int(np.argwhere(np.floor(cts_cum / min_cts) == i)[0])] * 1.
             if channels[-1] < max(data["r"]):
-                channels = np.append(channels, [max(data["r"])+1e-3])
+                channels = np.append(channels, [max(data["r"]) + 1e-3])
 
         channel_centroids = (channels[1:] + channels[:-1]) / 2
         channel_lowerrs = channel_centroids - channels[:-1]

@@ -39,6 +39,13 @@ def xy2elliptic(x, y, x0, y0, major, minor, angle, startangle, stopangle):
     return azimuth / np.pi * 180, r
 
 
+def isincircle(x, y, x0, y0, r):
+    x0 += 1.2345678e-8
+    y0 += 1.2345678e-8
+    distance = np.sqrt((x - x0) ** 2 + (y - y0) ** 2)
+    return distance < r
+
+
 def weighted_average(values, errors):
     mean = np.sum(values / errors ** 2) / np.sum(1 / errors ** 2)
     error = np.sqrt(1 / np.sum(errors ** -2))
