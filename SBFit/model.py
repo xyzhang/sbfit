@@ -69,6 +69,28 @@ def derive_smoothed_beta(x, s, b, r, constant, sigma=0.05):
     return (ds, db, dr, dconstant, dsigma)
 
 
+def smoothed_double_beta(x, s1, b1, r1, s2, b2, r2, constant, sigma=0.05):
+    nconvolve = int(np.round(sigma / 0.005))
+    xx = np.linspace(x - 3 * sigma, x + 3 * sigma, 1 + 6 * nconvolve)
+    yy = np.zeros(len(xx))
+    for i in range(len(xx)):
+        yy[i] = beta(xx[i], s1, b1, r1, 0) + beta(xx[i], s2, b2, r2, constant)
+    smoothed = ndimage.gaussian_filter(yy, nconvolve)[3 * nconvolve]
+    return smoothed
+
+
+def derive_smoothed_double_beta(x, s1, b1, r1, s2, b2, r2, constant, sigma=0.05):
+    ds1 = misc.derivative(lambda t: smoothed_double_beta(x, t, b1, r1, s2, b2, r2, constant, sigma=sigma), s1, dx=1e-3)
+    db1 = misc.derivative(lambda t: smoothed_double_beta(x, s1, t, r1, s2, b2, r2, constant, sigma=sigma), b1, dx=1e-3)
+    dr1 = misc.derivative(lambda t: smoothed_double_beta(x, s1, b1, t, s2, b2, r2, constant, sigma=sigma), r1, dx=1e-3)
+    ds2 = misc.derivative(lambda t: smoothed_double_beta(x, s1, b1, r1, t, b2, r2, constant, sigma=sigma), s2, dx=1e-3)
+    db2 = misc.derivative(lambda t: smoothed_double_beta(x, s1, b1, r1, s2, t, r2, constant, sigma=sigma), b2, dx=1e-3)
+    dr2 = misc.derivative(lambda t: smoothed_double_beta(x, s1, b1, r1, s2, b2, t, constant, sigma=sigma), r2, dx=1e-3)
+    dconstant = misc.derivative(lambda t: smoothed_double_beta(x, s1, b1, r1, s2, b2, r2, t, sigma=sigma), constant, dx=1e-3)
+    dsigma = misc.derivative(lambda t: smoothed_double_beta(x, s1, b1, r1, s2, b2, r2, constant, sigma=t), sigma, dx=1e-3)
+    return ds1, db1, dr1, ds2, db2, dr2, dconstant, dsigma
+
+
 class BrokenPowerLaw(Fittable1DModel):
     inputs = ("x",)
     outputs = ("y",)
@@ -140,3 +162,44 @@ class Beta(Fittable1DModel):
         elif isinstance(x, (int, float)):
             ds, dbeta, dr, dconstant, dsigma = derive_smoothed_beta(x, s, beta, r, constant, sigma=sigma)
         return [ds, dbeta, dr, dconstant, dsigma]
+
+
+class DoubleBeta(Fittable1DModel):
+    s1 = Parameter(default=1e-3, min=1e-10, max=1e2, description="Normalisation surface brightness 1")
+    beta1 = Parameter(default=0.7, min=1e-10, max=5., description="Beta factor 1")
+    r1 = Parameter(default=1.0, min=1e-1, max=20., description="Cut-off radius 1")
+    s2 = Parameter(default=1e-3, min=1e-10, max=1e2, description="Normalisation surface brightness 2")
+    beta2 = Parameter(default=0.7, min=1e-10, max=5., description="Beta factor 2")
+    r2 = Parameter(default=1.0, min=1e-1, max=20., description="Cut-off radius 2")
+    constant = Parameter(default=1e-7, min=0, max=1e-3, description="X-ray background")
+    sigma = Parameter(default=0.05, min=0.01, max=1., fixed=True, description="Smooth kernel width")
+
+    @staticmethod
+    def evaluate(x, s1, beta1, r1, s2, beta2, r2, constant, sigma):
+        if isinstance(x, np.ndarray):
+            y = np.zeros(x.shape)
+            for i in range(len(x)):
+                y[i] = smoothed_double_beta(x[i], s1, beta1, r1, s2, beta2, r2, constant, sigma=sigma)
+        elif isinstance(x, (int, float)):
+            y = smoothed_double_beta(x, s1, beta1, r1, s2, beta2, r2, constant, sigma=sigma)
+        return y
+
+    @staticmethod
+    def fit_deriv(x, s1, beta1, r1, s2, beta2, r2, constant, sigma):
+        if isinstance(x, np.ndarray):
+            ds1 = np.zeros_like(x)
+            dbeta1 = np.zeros_like(x)
+            dr1 = np.zeros_like(x)
+            ds2 = np.zeros_like(x)
+            dbeta2 = np.zeros_like(x)
+            dr2 = np.zeros_like(x)
+            dconstant = np.zeros_like(x)
+            dsigma = np.zeros_like(x)
+            for i in range(len(x)):
+                ds1[i], dbeta1[i], dr1[i], ds2[i], dbeta2[i], dr2[i], dconstant[i], dsigma[i] = \
+                    derive_smoothed_double_beta(x[i], s1, beta1, r1, s2, beta2, r2, constant, sigma=sigma)
+        elif isinstance(x, (int, float)):
+            ds1, dbeta1, dr1, ds2, dbeta2, dr2, dconstant, dsigma = derive_smoothed_double_beta(x, s1, beta1, r1, s2,
+                                                                                                beta2, r2, constant,
+                                                                                                sigma=sigma)
+        return ds1, dbeta1, dr1, ds2, dbeta2, dr2, dconstant, dsigma
