@@ -112,12 +112,12 @@ class DataSet(object):
                 bkgnorm = self.bkgimages.bkgnorm[i] * self.ctsimages.exptime[i] / self.bkgimages.exptime[i]
             net_cts_valid = cts_valid - bkg_valid * bkgnorm
             sub_data += [
-                Table(np.array([r_arcmin_valid, az_valid, cts_valid, exp_valid, bkg_valid, net_cts_valid,
+                Table(np.array([r_arcmin_valid, az_valid, cts_valid, exp_valid, bkg_valid, cts_valid, net_cts_valid,
                                 i * np.ones(len(cts_valid))]).T,
-                      names=("r", "az", "cts", "exp", "raw_bkg", "net_cts", "i"),
-                      dtype=(float, float, float, float, float, float, int))]
-        self.data = vstack(sub_data)
-        self.data.sort("r")
+                      names=("r", "az", "cts", "exp", "raw_bkg", "raw_cts", "net_cts", "i"),
+                      dtype=(float, float, float, float, float, float, float, int))]
+            self.data = vstack(sub_data)
+            self.data.sort("r")
 
     def get_profile(self, rmin, rmax, channelsize=1, bin_method="custom", min_cts=50):
         """
@@ -158,7 +158,7 @@ class DataSet(object):
         grouped = data.group_by(channel_index)
         grouped = grouped.groups
         profile = Table(np.zeros([len(grouped), 10]),
-                        dtype=[float, float, float, float, float, int, int, float, int, float],
+                        dtype=[float, float, float, float, float, float, float, float, int, float],
                         names=["r", "r_uperr", "r_lowerr", "flux", "flux_err", "cts", "bkg_cts", "exp", "npix",
                                "scale"])
         scale = self.xscale * self.yscale * 3600  # Sky area per pixel (unit: arcmin^-2)
