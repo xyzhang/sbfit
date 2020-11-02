@@ -2,9 +2,9 @@ import numpy as np
 from astropy.wcs import WCS
 from astropy.wcs.utils import proj_plane_pixel_scales
 from astropy.table import Table, vstack, hstack
-from .region import Epanda, Panda, Circle
+from .region import Epanda, Panda, Circle, Projection, Ellipse
 from .exception import *
-from .utils import xy2elliptic, isincircle
+from .utils import xy2elliptic, xyrot, isincircle, isinellipse
 from .image import CtsImageList, ExpImageList, BkgImageList
 
 
@@ -36,20 +36,23 @@ class DataSet(object):
         # Check region frame.
         if self.add_region.frame not in ["fk4", "fk5", "icrs", "galactic", "ecliptic"]:
             warnings.warn("The coordinate frame is not celestial.")
-        if not (isinstance(self.add_region, Panda) or isinstance(self.add_region, Epanda)):
+        if not (isinstance(self.add_region, Panda) or isinstance(self.add_region, Epanda) or isinstance(self.add_region,
+                                                                                                        Projection)):
             raise TypeError("Add region must be Panda or Epanda")
         self.get_data()
 
     def get_data(self):
         """Collecting data from images"""
         add_region = self.add_region
-        startangle = add_region.startangle
-        stopangle = add_region.stopangle
-        startangle += add_region.angle
-        stopangle += add_region.angle
-        if startangle > 360:
-            startangle -= 360
-            stopangle -= 360
+        # check additive region type
+        if isinstance(add_region, Epanda) or isinstance(add_region, Panda):
+            startangle = add_region.startangle
+            stopangle = add_region.stopangle
+            startangle += add_region.angle
+            stopangle += add_region.angle
+            if startangle > 360:
+                startangle -= 360
+                stopangle -= 360
 
         # Image size check.
         for i in range(len(self.ctsimages.data)):
@@ -57,6 +60,7 @@ class DataSet(object):
                     self.ctsimages.data[i].shape != self.bkgimages.data[i].shape:
                 raise MismatchingError("Count map, exposure map and background map should have the same shape.")
         # TODO Add SUB region features.
+
         # For each observation.
         sub_data = []
         for i in range(len(self.ctsimages.data)):
@@ -65,43 +69,69 @@ class DataSet(object):
             xcoor, ycoor = np.meshgrid(np.arange(lx) + 1., np.arange(ly) + 1.)
             subtraction_mask = np.zeros_like(xcoor)
             if add_region.frame in ["fk4", "fk5", "icrs", "galactic", "ecliptic"]:
-                # Region coordinates transfer.
-                x0, y0 = wcs.all_world2pix(np.array([[add_region.x.value, add_region.y.value]]), 1)[0]
-                # FITS image coordinate order should start from 1.
-                # Build grid of pixels.
                 xscale, yscale = proj_plane_pixel_scales(wcs)
                 self.xscale = xscale
                 self.yscale = yscale
-                outermajor = add_region.outermajor.value / 3600 / xscale  # Unit: pixel
-                outerminor = add_region.outerminor.value / 3600 / xscale
-                innermajor = add_region.innermajor.value / 3600 / xscale
-                innerminor = add_region.innerminor.value / 3600 / xscale
+                # Region coordinates transfer.
+                if isinstance(add_region, Panda) or isinstance(add_region, Epanda):
+                    x0, y0 = wcs.all_world2pix(np.array([[add_region.x.value, add_region.y.value]]), 1)[0]
+                elif isinstance(add_region, Projection):
+                    width = add_region.width.value / 3600 / xscale  # Unit: pixel
+                    xstart, ystart = \
+                        wcs.all_world2pix(np.array([[add_region.xstart.value, add_region.ystart.value]]), 1)[0]
+                    xend, yend = wcs.all_world2pix(np.array([[add_region.xend.value, add_region.yend.value]]), 1)[0]
+
+                # FITS image coordinate order should start from 1.
+                # Build grid of pixels.
+                if isinstance(add_region, Panda) or isinstance(add_region, Epanda):
+                    outermajor = add_region.outermajor.value / 3600 / xscale  # Unit: pixel
+                    outerminor = add_region.outerminor.value / 3600 / xscale
+                    # innermajor = add_region.innermajor.value / 3600 / xscale
+                    # innerminor = add_region.innerminor.value / 3600 / xscale
+                # mask point sources
                 for sub_region in self.sub_region:
                     if isinstance(sub_region, Circle):
                         xsub, ysub = wcs.all_world2pix(np.array([[sub_region.x.value, sub_region.y.value]]), 1)[0]
                         rsub = sub_region.radius.value / 3600 / xscale
                         subtraction_mask = np.logical_or(isincircle(xcoor, ycoor, xsub, ysub, rsub), subtraction_mask)
+                    elif isinstance(sub_region, Ellipse):
+                        xsub, ysub = wcs.all_world2pix(np.array([[sub_region.x.value, sub_region.y.value]]), 1)[0]
+                        majorsub = sub_region.major.value / 3600 / xscale
+                        minorsub = sub_region.major.value / 3600 / xscale
+                        pasub = sub_region.pa
+                        subtraction_mask = np.logical_or(
+                            isinellipse(xcoor, ycoor, xsub, ysub, majorsub, minorsub, pasub), subtraction_mask)
                     else:
                         warnings.warn("So far only Circle subtraction region is supported.")
             else:
                 # TODO Add features for non-celestial regions.
                 pass
-            az, r_pix = xy2elliptic(xcoor, ycoor, x0, y0, outermajor, outerminor, add_region.angle, startangle,
-                                    stopangle)
             exist_mask = (self.expimages.data[i] * 1.) > 0
             exist_mask = np.logical_and(exist_mask, np.logical_not(subtraction_mask))
-            # rad_mask = np.logical_and(r_pix >= innermajor, r_pix < outermajor)
-            rad_mask = r_pix >= innermajor
-            if stopangle > 360:
-                az_mask = np.logical_or(az >= startangle, az < stopangle - 360)
-            else:
-                az_mask = np.logical_and(az >= startangle, az < stopangle)
-            valid_mask = np.logical_and(exist_mask, np.logical_and(rad_mask, az_mask))
-            r_pix_valid = r_pix[valid_mask]
-            r_arcmin_valid = r_pix_valid * xscale * 60
-            az_valid = az[valid_mask]
-            # lx_valid = lx[valid_mask]
-            # ly_valid = ly[valid_mask]
+            if isinstance(add_region, Panda) or isinstance(add_region, Epanda):
+                az, r_pix = xy2elliptic(xcoor, ycoor, x0, y0, outermajor, outerminor, add_region.angle, startangle,
+                                        stopangle)
+                # rad_mask = np.logical_and(r_pix >= innermajor, r_pix < outermajor)
+                # rad_mask = r_pix >= innermajor
+                if stopangle > 360:
+                    az_mask = np.logical_or(az >= startangle, az < stopangle - 360)
+                else:
+                    az_mask = np.logical_and(az >= startangle, az < stopangle)
+                # valid_mask = np.logical_and(exist_mask, np.logical_and(rad_mask, az_mask))
+                valid_mask = np.logical_and(exist_mask, az_mask)
+                r_pix_valid = r_pix[valid_mask]
+                r_arcmin_valid = r_pix_valid * xscale * 60
+                # az_valid = az[valid_mask]
+                # lx_valid = lx[valid_mask]
+                # ly_valid = ly[valid_mask]
+            elif isinstance(add_region, Projection):
+                r_pix, ry = xyrot(xcoor, ycoor, xstart, ystart, xend, yend)
+                valid_mask = np.logical_and(exist_mask,
+                                            np.logical_and(r_pix >= 0, np.logical_and(ry >= 0, ry <= width)))
+                r_pix_valid = r_pix[valid_mask]
+                r_arcmin_valid = r_pix_valid * xscale * 60
+
+            # valid pixels
             cts_valid = self.ctsimages.data[i][valid_mask]
             exp_valid = self.expimages.data[i][valid_mask]
             bkg_valid = self.bkgimages.data[i][valid_mask]
@@ -112,9 +142,9 @@ class DataSet(object):
                 bkgnorm = self.bkgimages.bkgnorm[i] * self.ctsimages.exptime[i] / self.bkgimages.exptime[i]
             net_cts_valid = cts_valid - bkg_valid * bkgnorm
             sub_data += [
-                Table(np.array([r_arcmin_valid, az_valid, cts_valid, exp_valid, bkg_valid, cts_valid, net_cts_valid,
-                                i * np.ones(len(cts_valid))]).T,
-                      names=("r", "az", "cts", "exp", "raw_bkg", "raw_cts", "net_cts", "i"),
+                Table(np.array([r_arcmin_valid, cts_valid, exp_valid, bkg_valid, cts_valid, net_cts_valid,
+                                bkgnorm * np.ones_like(cts_valid), i * np.ones(len(cts_valid))]).T,
+                      names=("r", "cts", "exp", "raw_bkg", "raw_cts", "net_cts", "bkgnorm", "i"),
                       dtype=(float, float, float, float, float, float, float, int))]
             self.data = vstack(sub_data)
             self.data.sort("r")
@@ -145,7 +175,7 @@ class DataSet(object):
             cts_cum = np.cumsum(data["net_cts"])
             channels = np.zeros(int(np.max(cts_cum / min_cts)))
             for i in range(len(channels)):
-                channels[i] = data["r"][int(np.argwhere(np.floor(cts_cum / min_cts) == i)[0])] * 1.
+                channels[i] = data["r"][int(np.argwhere(np.ceil(cts_cum / min_cts) == i)[0])] * 1.
             if channels[-1] < max(data["r"]):
                 channels = np.append(channels, [max(data["r"]) + 1e-3])
 
@@ -176,8 +206,8 @@ class DataSet(object):
                 cts[j] = np.sum(subsubtable["cts"])
                 flux[j] = np.sum(subsubtable["net_cts"]) / exps[j] / scale
                 bkg_cts[j] = np.sum(subsubtable["cts"]) - np.sum(subsubtable["net_cts"])
-                # print(bkg_cts[j], np.sum(subsubtable["raw_bkg"]))
-                bkgnorm = bkg_cts[j] / np.sum(subsubtable["raw_bkg"])
+                # bkgnorm = bkg_cts[j] / np.sum(subsubtable["raw_bkg"])
+                bkgnorm = np.nanmean(subsubtable["bkgnorm"])
                 flux_err[j] = np.sqrt(
                     np.sum(subsubtable["cts"]) + np.sum(subsubtable["raw_bkg"]) * bkgnorm ** 2) / exps[j] / scale
             profile["cts"][i] = np.sum(cts)

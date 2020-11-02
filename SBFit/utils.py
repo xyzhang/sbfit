@@ -39,11 +39,35 @@ def xy2elliptic(x, y, x0, y0, major, minor, angle, startangle, stopangle):
     return azimuth / np.pi * 180, r
 
 
+def xyrot(x, y, xstart, ystart, xend, yend):
+    xstart += 1e-8
+    ystart += 1e-8
+    if xend >= xstart and yend >= ystart:
+        phi = np.arctan((yend - ystart) / (xend - xstart))
+    elif xend < xstart and yend >= ystart:
+        phi = (np.pi + np.arctan((yend - ystart) / (xend - xstart)))
+    elif xend < xstart and yend < ystart:
+        phi = (np.pi + np.arctan((yend - ystart) / (xend - xstart)))
+    else:
+        phi = (2 * np.pi + np.arctan((yend - ystart) / (xend - xstart)))
+
+    rx = (x - xstart) * np.cos(phi) + (y - ystart) * np.sin(phi)
+    ry = - (x - xstart) * np.sin(phi) + (y - ystart) * np.cos(phi)
+    return rx, ry
+
+
 def isincircle(x, y, x0, y0, r):
     x0 += 1.2345678e-8
     y0 += 1.2345678e-8
     distance = np.sqrt((x - x0) ** 2 + (y - y0) ** 2)
     return distance < r
+
+
+def isinellipse(x, y, x0, y0, major, minor, pa):
+    x0 += 1.2345678e-8
+    y0 += 1.2345678e-8
+    _, r = xy2elliptic(x, y, x0, y0, major, minor, pa, pa - 90, pa + 90)
+    return r < major
 
 
 def weighted_average(values, errors):
