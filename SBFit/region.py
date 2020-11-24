@@ -132,7 +132,7 @@ class Projection(Region):
 class Epanda(Region):
 
     def __init__(self, frame="image", x=0, y=0, startangle=0, stopangle=360, nangle=1, innermajor=0, innerminor=0,
-                 outermajor=100, outerminor=100, nradius=1, angle=0, status="ADD"):
+                 outermajor=100, outerminor=100, nradius=1, angle=0, status="ADD", axis="r"):
         super().__init__()
         self.frame = frame
         self.status = status
@@ -141,6 +141,7 @@ class Epanda(Region):
         self.nangle = int(nangle)
         self.nradius = int(nradius)
         self.angle = float(angle)
+        self.axis = axis
         if frame == "image":
             # Now the unit of coordinates is pixel.
             self.x = float(x)
@@ -165,7 +166,7 @@ class Epanda(Region):
 class Panda(Region):
 
     def __init__(self, frame="image", x=0, y=0, startangle=0, stopangle=360, nangle=1, inner=0,
-                 outer=100, nradius=1, status="ADD"):
+                 outer=100, nradius=1, status="ADD", axis="r"):
         super().__init__()
         self.frame = frame
         self.status = status
@@ -174,6 +175,7 @@ class Panda(Region):
         self.nangle = int(nangle)
         self.nradius = int(nradius)
         self.angle = 0.0
+        self.axis = axis
         if frame == "image":
             # Now the unit of coordinates is pixel.
             self.x = float(x)

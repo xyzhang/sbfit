@@ -86,8 +86,8 @@ class DataSet(object):
                 if isinstance(add_region, Panda) or isinstance(add_region, Epanda):
                     outermajor = add_region.outermajor.value / 3600 / xscale  # Unit: pixel
                     outerminor = add_region.outerminor.value / 3600 / xscale
-                    # innermajor = add_region.innermajor.value / 3600 / xscale
-                    # innerminor = add_region.innerminor.value / 3600 / xscale
+                    innermajor = add_region.innermajor.value / 3600 / xscale
+                    innerminor = add_region.innerminor.value / 3600 / xscale
                 # mask point sources
                 for sub_region in self.sub_region:
                     if isinstance(sub_region, Circle):
@@ -113,17 +113,24 @@ class DataSet(object):
                                         stopangle)
                 # rad_mask = np.logical_and(r_pix >= innermajor, r_pix < outermajor)
                 # rad_mask = r_pix >= innermajor
-                if stopangle > 360:
-                    az_mask = np.logical_or(az >= startangle, az < stopangle - 360)
-                else:
-                    az_mask = np.logical_and(az >= startangle, az < stopangle)
-                # valid_mask = np.logical_and(exist_mask, np.logical_and(rad_mask, az_mask))
-                valid_mask = np.logical_and(exist_mask, az_mask)
-                r_pix_valid = r_pix[valid_mask]
-                r_arcmin_valid = r_pix_valid * xscale * 60
-                # az_valid = az[valid_mask]
-                # lx_valid = lx[valid_mask]
-                # ly_valid = ly[valid_mask]
+                if add_region.axis == "r":
+                    if stopangle > 360:
+                        az_mask = np.logical_or(az >= startangle, az < stopangle - 360)
+                    else:
+                        az_mask = np.logical_and(az >= startangle, az < stopangle)
+                    # valid_mask = np.logical_and(exist_mask, np.logical_and(rad_mask, az_mask))
+                    valid_mask = np.logical_and(exist_mask, az_mask)
+                    r_pix_valid = r_pix[valid_mask]
+                    r_arcmin_valid = r_pix_valid * xscale * 60
+                    # az_valid = az[valid_mask]
+                    # lx_valid = lx[valid_mask]
+                    # ly_valid = ly[valid_mask]
+                elif add_region.axis == "theta":
+                    rad_mask = np.logical_and(r_pix >= innermajor, r_pix < outermajor)
+                    az -= startangle
+                    valid_mask = np.logical_and(exist_mask, rad_mask)
+                    r_arcmin_valid = az[valid_mask]
+
             elif isinstance(add_region, Projection):
                 r_pix, ry = xyrot(xcoor, ycoor, xstart, ystart, xend, yend)
                 valid_mask = np.logical_and(exist_mask,

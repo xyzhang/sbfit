@@ -22,8 +22,9 @@ def xy2elliptic(x, y, x0, y0, major, minor, angle, startangle, stopangle):
     Input parameter angle has the unit of degree.
     """
     average_angle = (startangle + stopangle) / 2
-    if major < minor:
-        raise InvalidValueError("Minor axis should not be longer than major axis.")
+    #if major < minor:
+    #    raise InvalidValueError("Minor axis should not be longer than major axis.")
+
     # Shift the center slightly to avoid nan.
     x0 += 1.2345678e-8
     y0 += 1.2345678e-8
