@@ -1,5 +1,6 @@
 import numpy as np
 from astropy.io import fits
+from astropy.modeling import Model
 from .exception import *
 
 
@@ -22,7 +23,7 @@ def xy2elliptic(x, y, x0, y0, major, minor, angle, startangle, stopangle):
     Input parameter angle has the unit of degree.
     """
     average_angle = (startangle + stopangle) / 2
-    #if major < minor:
+    # if major < minor:
     #    raise InvalidValueError("Minor axis should not be longer than major axis.")
 
     # Shift the center slightly to avoid nan.
@@ -75,3 +76,31 @@ def weighted_average(values, errors):
     mean = np.sum(values / errors ** 2) / np.sum(1 / errors ** 2)
     error = np.sqrt(1 / np.sum(errors ** -2))
     return mean, error
+
+
+def get_free_parameter(model: Model):
+    pnames_free = list(model.param_names)
+    pvalues_free = list(model.parameters)
+    pfixed: dict = model.fixed
+    for key in pfixed.keys():
+        if pfixed[key]:
+            keyindex = pnames_free.index(key)
+            pnames_free.pop(keyindex)
+            pvalues_free.pop(keyindex)
+    return pnames_free, pvalues_free
+
+
+def get_parameter_bounds(model: Model, param_names):
+    low_bounds = []
+    up_bounds = []
+    for item in param_names:
+        item_bounds = list(model.bounds[item])
+        if item_bounds[0] is None:
+            low_bounds += [-np.inf]
+        else:
+            low_bounds += [item_bounds[0]]
+        if item_bounds[1] is None:
+            up_bounds += [np.inf]
+        else:
+            up_bounds += [item_bounds[1]]
+    return np.array(low_bounds), np.array(up_bounds)

@@ -1,8 +1,13 @@
+import copy
+from collections import OrderedDict
 import numpy as np
 from scipy import integrate, ndimage, misc
-from astropy.modeling import Fittable1DModel, Parameter
+from astropy.modeling import Model, Fittable1DModel, Parameter
+from astropy.convolution import convolve, Gaussian1DKernel
+from astropy.modeling.utils import get_inputs_and_params
+from numba import njit
 
-
+'''
 def broken_pwl(x, n, a1, a2, r, c, constant):
     """
     x: radius for calculation;
@@ -44,6 +49,7 @@ def derive_smoothed_broken_pwl(x, n, a1, a2, r, c, constant, sigma=0.05):
     dconstant = misc.derivative(lambda t: smoothed_broken_pwl(x, n, a1, a2, r, c, t, sigma=sigma), constant, dx=1e-3)
     dsigma = misc.derivative(lambda t: smoothed_broken_pwl(x, n, a1, a2, r, c, constant, sigma=t), sigma, dx=1e-3)
     return (dn, da1, da2, dr, dc, dconstant, dsigma)
+'''
 
 
 def beta(x, s, b, r, constant):
@@ -86,11 +92,14 @@ def derive_smoothed_double_beta(x, s1, b1, r1, s2, b2, r2, constant, sigma=0.05)
     ds2 = misc.derivative(lambda t: smoothed_double_beta(x, s1, b1, r1, t, b2, r2, constant, sigma=sigma), s2, dx=1e-3)
     db2 = misc.derivative(lambda t: smoothed_double_beta(x, s1, b1, r1, s2, t, r2, constant, sigma=sigma), b2, dx=1e-3)
     dr2 = misc.derivative(lambda t: smoothed_double_beta(x, s1, b1, r1, s2, b2, t, constant, sigma=sigma), r2, dx=1e-3)
-    dconstant = misc.derivative(lambda t: smoothed_double_beta(x, s1, b1, r1, s2, b2, r2, t, sigma=sigma), constant, dx=1e-3)
-    dsigma = misc.derivative(lambda t: smoothed_double_beta(x, s1, b1, r1, s2, b2, r2, constant, sigma=t), sigma, dx=1e-3)
+    dconstant = misc.derivative(lambda t: smoothed_double_beta(x, s1, b1, r1, s2, b2, r2, t, sigma=sigma), constant,
+                                dx=1e-3)
+    dsigma = misc.derivative(lambda t: smoothed_double_beta(x, s1, b1, r1, s2, b2, r2, constant, sigma=t), sigma,
+                             dx=1e-3)
     return ds1, db1, dr1, ds2, db2, dr2, dconstant, dsigma
 
 
+'''
 class BrokenPowerLaw(Fittable1DModel):
     inputs = ("x",)
     outputs = ("y",)
@@ -129,6 +138,7 @@ class BrokenPowerLaw(Fittable1DModel):
             dn, da1, da2, dr, dc, dconstant, dsigma = derive_smoothed_broken_pwl(x, n, a1, a2, r, c, constant,
                                                                                  sigma=sigma)
         return [dn, da1, da2, dr, dc, dconstant, dsigma]
+'''
 
 
 class Beta(Fittable1DModel):
@@ -203,3 +213,104 @@ class DoubleBeta(Fittable1DModel):
                                                                                                 beta2, r2, constant,
                                                                                                 sigma=sigma)
         return ds1, dbeta1, dr1, ds2, dbeta2, dr2, dconstant, dsigma
+
+
+def custom_model(func):
+    """
+    An alternative version of astropy.modeling.custom_model
+    :param func:
+    :return:
+    """
+    return _model_wrapper(func)
+
+
+def _model_wrapper(func):
+    name = func.__name__
+    attr_dict = OrderedDict()
+
+    # add parameters
+    inputs, params = get_inputs_and_params(func)
+    for para in params:
+        attr_dict.update({para.name: Parameter(para.name, default=para.default)})
+    # attr_dict.update({"sigma": Parameter("sigma", default=0.05, fixed=True)})
+
+    attr_dict.update({"__module__": "model",
+                      "__doc__": func.__doc__,
+                      "n_inputs": len(inputs),
+                      "n_outputs": len(inputs[0].name)})
+
+    # evaluate method
+    def evaluate(x, **evaluate_kwargs):
+
+        if isinstance(x, np.ndarray):
+            # y = np.zeros(x.shape)
+            # for i in range(len(x)):
+            #    y[i] = func(x[i], **evaluate_kwargs)
+            # y = list(map(lambda t: func(t, **evaluate_kwargs), x))
+            y = [func(x[i], **evaluate_kwargs) for i in range(len(x))]
+            return np.array(y)
+        elif isinstance(x, (int, float)):
+            return func(x, **evaluate_kwargs)
+
+    attr_dict.update({"evaluate": staticmethod(evaluate)})
+
+    return type(name, (Model,), attr_dict)
+
+
+@custom_model
+def DoublePowerLaw(x, n=1, a1=0.1, a2=1.0, r=1.0, c=2.0, constant=1e-5):
+    """
+    x: radius for calculation;
+    n: normalisation factor at the jump;
+    a1: power law index 1;
+    a2: power law index 2;
+    r: jump location;
+    c: contraction factor.
+
+    x, r have a unit of arcmin;
+    n has an arbitrary unit.
+    """
+    if x < r:
+        # f = n ** 2 * (c ** 2 * integrate.quad(lambda z: ((x ** 2 + z ** 2) / r ** 2) ** -a1, 1 / np.inf,
+        #                                      np.sqrt(r ** 2 - x ** 2), epsrel=1e-3)[0] +
+        #              integrate.quad(lambda z: ((x ** 2 + z ** 2) / r ** 2) ** -a2, np.sqrt(r ** 2 - x ** 2),
+        #                             np.inf, epsrel=1e-3)[0])
+        f = n ** 2 * (c ** 2 * integrate.quad(_dpl_project, 1e-10, np.sqrt(r ** 2 - x ** 2),
+                                              args=(x, r, a1), epsrel=1e-8)[0] +
+                      integrate.quad(_dpl_project, np.sqrt(r ** 2 - x ** 2), np.inf, args=(x, r, a2),
+                                     epsrel=1e-8)[0])
+    else:
+        # f = n ** 2 * integrate.quad(lambda z: ((x ** 2 + z ** 2) / r ** 2) ** -a2, 1e-4, np.inf, epsrel=1e-3)[0]
+        f = n ** 2 * integrate.quad(_dpl_project, 1e-5, np.inf, args=(x, r, a2), epsrel=1e-10)[0]
+
+    return f + constant
+
+
+# divided functions for speed-up
+@njit
+def _dpl_project(z, x, r, a, ):
+    return ((x ** 2 + z ** 2) / r ** 2) ** -a
+
+
+@custom_model
+def ConeDoublePowerLaw(theta, n=1, a1=0, a2=1.0, b=10., c=2.0, z1=0.5, z2=1.0, az=0.0, theta_max=70, constant=1e-5):
+    def sb(n0, z, phi, b, c, a1, a2, az):
+        n_in = lambda norm, rho, phi0, phi_b, alpha1, alphaz: norm * (phi0 / phi_b) ** (-alpha1) * rho ** (-alphaz)
+        n_out = lambda norm, rho, phi0, phi_b, jump, alpha2, alphaz: \
+            norm / jump * (phi0 / phi_b) ** (-alpha2) * rho ** (-alphaz)
+
+        phi = np.abs(phi)
+        out_bound = z * np.sqrt(1 - (np.cos(theta_max / 180 * np.pi) / np.cos(phi)) ** 2)
+        n_in_sq = lambda l: n_in(n0, np.sqrt(z ** 2 + l ** 2),
+                                 np.arccos(z * np.cos(phi) / np.sqrt(z ** 2 + l ** 2)), b, a1, az) ** 2
+        n_out_sq = lambda l: n_out(n0, np.sqrt(z ** 2 + l ** 2),
+                                   np.arctan(np.sqrt(z ** 2 * np.sin(phi) ** 2 + l ** 2) / (z * np.cos(phi))), b, c,
+                                   a2, az) ** 2
+        if phi > b:
+            return 2 * integrate.quad(n_out_sq, 1e-7, out_bound)[0]
+        else:
+            l_b = z * np.sqrt(np.cos(phi) ** 2 / np.cos(b) ** 2 - 1)
+            return 2 * (integrate.quad(n_in_sq, 1e-7, l_b)[0] + integrate.quad(n_out_sq, l_b, out_bound)[0])
+
+    return integrate.quad(lambda t: t * sb(n, t, theta / 180 * np.pi, b / 180 * np.pi, c, a1, a2, az),
+                          z1, z2)[0] * 2 / (z2 ** 2 - z1 ** 2) + constant

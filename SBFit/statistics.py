@@ -12,8 +12,24 @@ def chi_square_deriv(y, y_model, err, model_deriv):
     return chi2_deriv
 
 
-def cstat(y, y_model, err):
-    return 2 * np.nansum(y_model - y + y * np.log(y / y_model))
+def cstat(y, y_model):
+    """
+    Calculate c-stat value.
+
+    Parameters
+    ----------
+    y : np.ndarray
+        Observed values.
+    y_model : np.ndarray
+        Predicted values.
+    Returns
+    -------
+    cstat : np.ndarray
+        C-statistic value
+
+    """
+    cstat = 2 * np.nansum(y_model - y + y * np.log(y / y_model))
+    return cstat
 
 
 def cstat_deriv(y, y_model, err, model_deriv):
