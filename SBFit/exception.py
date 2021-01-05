@@ -1,5 +1,7 @@
 import warnings
 
+__all__ = ["MismatchingError"]
+
 
 class Error(Exception):
     """Basic custom exception class"""
