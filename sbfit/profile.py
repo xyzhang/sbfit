@@ -6,20 +6,14 @@ import warnings
 
 import numpy as np
 from scipy import optimize, stats
-from astropy.wcs import WCS
-from astropy.wcs.utils import proj_plane_pixel_scales
-from astropy import table, modeling
-from astropy.table import Table, vstack
+from astropy import modeling
+from astropy.table import Table
 from astropy.convolution import CustomKernel, Gaussian1DKernel, convolve
 import matplotlib.pyplot as plt
 import emcee
 import corner
 
-from .region import Epanda, Panda, Circle, Projection, Ellipse
-from .exception import *
 from . import utils
-from .utils import xy2elliptic, xyrot, isincircle, isinellipse
-from .image import CtsImageList, ExpImageList, BkgImageList
 from .statistics import cstat
 
 __all__ = ["Profile"]
@@ -74,6 +68,9 @@ class Profile(object):
             names=("r", "cts", "exp", "raw_bkg", "scaled_bkg", "model_cts",
                    "bin_num"),
             dtype=(float, int, float, int, float, float, int))
+
+    def deepcopy(self):
+        return copy.deepcopy(self)
 
     def rebin(self, start=0, end=500, method="min_cts", min_cts=30,
               lin_width=10, log_width=0.05):
@@ -301,7 +298,7 @@ class Profile(object):
                 where="post", label="model", color="tab:orange")
             if scale == "loglog":
                 ax.loglog()
-            elif scale=="semilogx":
+            elif scale == "semilogx":
                 ax.semilogx()
             elif scale == "semilogy":
                 ax.semilogy()

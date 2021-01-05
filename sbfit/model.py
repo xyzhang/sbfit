@@ -5,7 +5,8 @@ from astropy.modeling import Model, Parameter
 from astropy.modeling.utils import get_inputs_and_params
 from numba import njit
 
-__all__ = ["custom_model", "Constant", "DoublePowerLaw", "Beta"]
+__all__ = ["custom_model", "Constant", "DoublePowerLaw", "Beta",
+           "ConeDoublePowerLaw"]
 
 
 class BasicModel(Model):

@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='SBFit',
+    name='sbfit',
     version='0.1.0',
     packages=find_packages(),
     url='https://gitlab.sron.nl/asg/x-ray-extended/sbfit',
