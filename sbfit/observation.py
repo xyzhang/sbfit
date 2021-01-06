@@ -1,5 +1,6 @@
 import numpy as np
 from astropy.table import Table, vstack
+from astropy import units as u
 
 from .image import CtsImage, ExpImage, BkgImage
 from .profile import Profile
@@ -56,11 +57,16 @@ class Observation(object):
     def pixel_scale(self):
         return self.cts_image.pixel_scale
 
+    @property
+    def exposure_unit(self):
+        return self.exp_image.unit
+
 
 class ObservationList(object):
 
     def __init__(self, obs_list):
         self.observations = obs_list
+        self._exposure_unit = self.observations[0].exposure_unit
 
     @property
     def observations(self):
@@ -87,6 +93,19 @@ class ObservationList(object):
     @property
     def pixel_scale(self):
         return self.observations[0].pixel_scale
+
+    @property
+    def exposure_unit(self):
+        return self._exposure_unit
+
+    @exposure_unit.setter
+    def exposure_unit(self, unit):
+        if isinstance(unit, str):
+            self._exposure_unit = u.Unit(unit)
+        elif isinstance(unit, u.Unit):
+            self._exposure_unit = unit
+        else:
+            raise TypeError("unit must be a string or an Unit object.")
 
     def get_profile(self, region_list, channel_width=1, profile_axis="x"):
         if not isinstance(region_list, RegionList):
@@ -141,4 +160,5 @@ class ObservationList(object):
 
         raw_profile.sort("r")
         return Profile(raw_profile, pixel_scale=self.pixel_scale,
-                       profile_axis=profile_axis, channel_width=channel_width)
+                       profile_axis=profile_axis, channel_width=channel_width,
+                       exposure_unit=self.exposure_unit)

@@ -8,6 +8,7 @@ import numpy as np
 from scipy import optimize, stats
 from astropy import modeling
 from astropy.table import Table
+from astropy import units as u
 from astropy.convolution import CustomKernel, Gaussian1DKernel, convolve
 import matplotlib.pyplot as plt
 import emcee
@@ -21,7 +22,7 @@ __all__ = ["Profile"]
 
 class Profile(object):
     def __init__(self, raw_data: Table, profile_axis="x", channel_width=1,
-                 pixel_scale=1):
+                 pixel_scale=1, exposure_unit=u.s):
         self.profile_axis = profile_axis
         self._pixel_area = pixel_scale ** 2 * 3600  # arcmin^2 / pixel
         self.channel_width = channel_width
@@ -38,6 +39,7 @@ class Profile(object):
         self._show_stat = False
         self._min_stat = None
         self._error_approx = {}
+        self._exposure_unit = exposure_unit
 
     @staticmethod
     def _create_channel(raw_data, bin_grid):
@@ -276,8 +278,8 @@ class Profile(object):
         elif kernel_type == "lorenzian":
             pass
 
-    def plot(self, plot_type="binned_profile", scale="loglog"):
-        if plot_type == "binned_profile":
+    def plot(self, plot_type="profile", scale="loglog"):
+        if plot_type == "profile":
             fig: plt.Figure = plt.figure()
             ax: plt.Axes = fig.gca()
             ax.errorbar(self.binned_profile["r"],
@@ -285,20 +287,35 @@ class Profile(object):
                         xerr=(self.binned_profile["r_error_right"],
                               self.binned_profile["r_error_left"]),
                         yerr=self.binned_profile["sb_error"], ls="",
-                        label="_data", color="tab:blue")
-            ax.errorbar(self.binned_profile["r"],
-                        self.binned_profile["bkg_sb"],
-                        xerr=(self.binned_profile["r_error_right"],
-                              self.binned_profile["r_error_left"]),
-                        yerr=self.binned_profile["bkg_sb_error"], ls="",
-                        label="background", color="tab:green")
+                        label="data", color="tab:blue")
             ax.step(np.append(
                 self.binned_profile["r"] - self.binned_profile["r_error_left"],
                 np.array(self.binned_profile["r"][-1] +
                          self.binned_profile["r_error_right"][-1])),
-                np.append(self.binned_profile["model_sb"],
-                          np.array(self.binned_profile["model_sb"][-1])),
-                where="post", label="model", color="tab:orange")
+                np.append(self.binned_profile["bkg_sb"],
+                          np.array(self.binned_profile["bkg_sb"][-1])),
+                where="post", label="background", color="tab:green", alpha=0.7)
+            ax.fill_between(np.append(
+                self.binned_profile["r"] - self.binned_profile["r_error_left"],
+                np.array(self.binned_profile["r"][-1] +
+                         self.binned_profile["r_error_right"][-1])),
+                np.append(self.binned_profile["bkg_sb"] -
+                          self.binned_profile["bkg_sb_error"],
+                          np.array(self.binned_profile["bkg_sb"][-1]) -
+                          self.binned_profile["bkg_sb_error"][-1]),
+                np.append(self.binned_profile["bkg_sb"] +
+                          self.binned_profile["bkg_sb_error"],
+                          np.array(self.binned_profile["bkg_sb"][-1]) +
+                          self.binned_profile["bkg_sb_error"][-1]),
+                step="post", alpha=0.3, color="tab:green")
+            ax.step(np.append(self.binned_profile["r"] -
+                              self.binned_profile["r_error_left"],
+                              np.array(self.binned_profile["r"][-1] +
+                                       self.binned_profile["r_error_right"][-1]
+                                       )),
+                    np.append(self.binned_profile["model_sb"],
+                              np.array(self.binned_profile["model_sb"][-1])),
+                    where="post", label="model", color="tab:orange")
             if scale == "loglog":
                 ax.loglog()
             elif scale == "semilogx":
@@ -310,8 +327,12 @@ class Profile(object):
             else:
                 raise ValueError("Scale must be one of {'linear', 'loglog',"
                                  "'semilogx', 'semilogy'}.")
-            ax.set_xlabel("r (arcsec)")
-            ax.set_ylabel("SB")
+            if self.profile_axis == "x":
+                ax.set_xlabel("r (arcsec)")
+            elif self.profile_axis == "y":
+                ax.set_xlabel("$\\theta$ (degree)")
+            ax.set_ylabel(
+                f"SB ({u.count / u.arcmin ** 2 / self._exposure_unit:latex_inline})")
             ax.legend()
             plt.show()
             plt.close(fig)
