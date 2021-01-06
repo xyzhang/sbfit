@@ -5,8 +5,6 @@ from .image import CtsImage, ExpImage, BkgImage
 from .profile import Profile
 from .region import *
 
-import matplotlib.pyplot as plt
-
 __all__ = ["Observation", "ObservationList"]
 
 

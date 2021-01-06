@@ -5,7 +5,7 @@ from astropy.modeling import Model, Parameter
 from astropy.modeling.utils import get_inputs_and_params
 from numba import njit
 
-__all__ = ["custom_model", "Constant", "DoublePowerLaw", "Beta",
+__all__ = ["custom_model", "Constant", "Gaussian", "DoublePowerLaw", "Beta",
            "ConeDoublePowerLaw"]
 
 
@@ -16,7 +16,7 @@ class BasicModel(Model):
         x = args.pop(0)
         pnames = self.param_names
         for i in range(len(args)):
-            args[i] = args[i][0]
+            args[i] = args[i]
         kwargs = dict(zip(pnames, args))
         if isinstance(x, np.ndarray):
             y = [self._func(x[i], **kwargs) for i in range(len(x))]
@@ -43,12 +43,11 @@ def __model_wrapper(func):
     for para in params:
         attr_dict.update(
             {para.name: Parameter(para.name, default=para.default)})
-    # attr_dict.update({"sigma": Parameter("sigma", default=0.05, fixed=True)})
 
     attr_dict.update({"__module__": "model",
                       "__doc__": func.__doc__,
                       "n_inputs": len(inputs),
-                      "n_outputs": len(inputs[0].name),
+                      "n_outputs": len([inputs[0].name]),
                       "_func": staticmethod(func),
                       })
 
@@ -57,7 +56,14 @@ def __model_wrapper(func):
 
 @custom_model
 def Constant(x, c=0):
-    return c
+    result = c
+    return result
+
+
+@custom_model
+def Gaussian(x, n=1, x0=0, sigma=1):
+    result = n * np.exp(-(x - x0) ** 2 / 2 / sigma ** 2)
+    return result
 
 
 @custom_model
@@ -66,7 +72,7 @@ def DoublePowerLaw(x, n=1, a1=0.1, a2=1.0, r=1.0, c=2.0):
     x: radius for calculation;
     n: normalisation factor at the jump;
     a1: power law index 1;
-    a2: power law index 2;
+    a: power law index 2;
     r: jump location;
     c: contraction factor.
 
@@ -98,33 +104,37 @@ def Beta(x, s, b, r, constant):
 
 
 @custom_model
-def ConeDoublePowerLaw(theta, n=1, a1=0, a2=1.0, b=10., c=2.0, z1=0.5, z2=1.0,
-                       az=0.0, theta_max=70):
-    def sb(n0, z, phi, b, c, a1, a2, az):
-        n_in = lambda norm, rho, phi0, phi_b, alpha1, alphaz: norm * (
-                phi0 / phi_b) ** (-alpha1) * rho ** (-alphaz)
-        n_out = lambda norm, rho, phi0, phi_b, jump, alpha2, alphaz: \
-            norm / jump * (phi0 / phi_b) ** (-alpha2) * rho ** (-alphaz)
+def ConeDoublePowerLaw(x, n=1, a1=0, a2=1.0, b=10., c=2.0, z1=0.5, z2=1.0,
+                       az=0.0, theta_max=70, center=0):
+    x = x - center
 
-        phi = np.abs(phi)
-        out_bound = z * np.sqrt(
-            1 - (np.cos(theta_max / 180 * np.pi) / np.cos(phi)) ** 2)
-        n_in_sq = lambda l: n_in(n0, np.sqrt(z ** 2 + l ** 2),
-                                 np.arccos(z * np.cos(phi) / np.sqrt(
-                                     z ** 2 + l ** 2)), b, a1, az) ** 2
-        n_out_sq = lambda l: n_out(n0, np.sqrt(z ** 2 + l ** 2),
-                                   np.arctan(np.sqrt(
-                                       z ** 2 * np.sin(phi) ** 2 + l ** 2) / (
-                                                     z * np.cos(phi))), b,
-                                   c,
-                                   a2, az) ** 2
-        if phi > b:
-            return 2 * integrate.quad(n_out_sq, 1e-7, out_bound)[0]
-        else:
-            l_b = z * np.sqrt(np.cos(phi) ** 2 / np.cos(b) ** 2 - 1)
-            return 2 * (integrate.quad(n_in_sq, 1e-7, l_b)[0] +
-                        integrate.quad(n_out_sq, l_b, out_bound)[0])
+    result = integrate.quad(
+        lambda t: t * _cone_sb(n, t, x / 180 * np.pi, b / 180 * np.pi, c,
+                               a1, a2,
+                               az, theta_max), z1, z2)[0] * 2 / (
+                     z2 ** 2 - z1 ** 2)
+    return result
 
-    return integrate.quad(
-        lambda t: t * sb(n, t, theta / 180 * np.pi, b / 180 * np.pi, c, a1, a2,
-                         az), z1, z2)[0] * 2 / (z2 ** 2 - z1 ** 2)
+
+@njit
+def _cone_n_sq(l, n0, z, phi, b, a, az):
+    rho = np.sqrt(z ** 2 + l ** 2)
+    phi0 = np.arccos(z * np.cos(phi) / np.sqrt(z ** 2 + l ** 2))
+    return (n0 * (phi0 / b) ** (-a) * rho ** (-az)) ** 2
+
+
+def _cone_sb(n0, z, phi, b, c, a1, a2, az, theta_max):
+    phi = np.abs(phi)
+
+    out_bound = z * np.sqrt(
+        1 - (np.cos(theta_max / 180 * np.pi) / np.cos(phi)) ** 2)
+    if phi > b:
+        return 2 * integrate.quad(_cone_n_sq, 1e-7, out_bound,
+                                  args=(n0, z, phi, b, a2, az),
+                                  )[0]
+    else:
+        l_b = z * np.sqrt(np.cos(phi) ** 2 / np.cos(b) ** 2 - 1)
+        return 2 * (c ** 2 * integrate.quad(_cone_n_sq, 1e-7, l_b,
+                                            args=(n0, z, phi, b, a1, az))[0] +
+                    integrate.quad(_cone_n_sq, l_b, out_bound,
+                                   args=(n0, z, phi, b, a2, az))[0])

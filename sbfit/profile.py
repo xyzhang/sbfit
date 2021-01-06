@@ -182,7 +182,7 @@ class Profile(object):
              pseudo_bkgsb,
              pseudo_bkgsb_error, model_sb, cts_binned, scaled_bkg_binned],
             names=(
-                "r", "r_error_left", "r_error_right", "sb", "sb_error",
+                "r", "r_error_left", "r_error_right", "_cone_sb", "sb_error",
                 "bkg_sb",
                 "bkg_sb_error", "model_sb", "total_cts", "bkg_cts"),
             dtype=(float, float, float, float, float, float, float, float, int,
@@ -229,10 +229,12 @@ class Profile(object):
             valid_channel_center = self.channel_center[valid_grid_mask]
 
             # calculate
+            # model_value = self.model.evaluate(valid_channel_center,
+            #                                  **dict(
+            #                                      zip(self.model.param_names,
+            #                                          self.model.parameters)))
             model_value = self.model.evaluate(valid_channel_center,
-                                              **dict(
-                                                  zip(self.model.param_names,
-                                                      self.model.parameters)))
+                                              *self.model.parameters)
             total_model_value = np.zeros_like(self.channel_center)
             total_model_value[valid_grid_mask] = model_value
             tmid = time.time()
@@ -278,7 +280,8 @@ class Profile(object):
         if plot_type == "binned_profile":
             fig: plt.Figure = plt.figure()
             ax: plt.Axes = fig.gca()
-            ax.errorbar(self.binned_profile["r"], self.binned_profile["sb"],
+            ax.errorbar(self.binned_profile["r"],
+                        self.binned_profile["_cone_sb"],
                         xerr=(self.binned_profile["r_error_right"],
                               self.binned_profile["r_error_left"]),
                         yerr=self.binned_profile["sb_error"], ls="",
@@ -404,7 +407,7 @@ class Profile(object):
         dstat = np.inf
         stat = self.calculate(update=False)
         if show_step:
-            print(f"Start fit\nC-stat: {stat:.3f}")
+            print(f"Start fit\nC-stat: {stat:.3f}\n{pvalues_free}")
         fail = 0
         while dstat > tol and fail <= nfail:
             # calculate delta parameter
@@ -427,7 +430,7 @@ class Profile(object):
                 self.model.__setattr__(pnames_free[i], new_pvalues_free[i])
             new_stat = self.calculate(update=False)
             if show_step:
-                print(f"C-stat: {new_stat:.3f}")
+                print(f"C-stat: {new_stat:.3f}\n{new_pvalues_free}")
             if stat - new_stat <= 0:  # new stat > current stat
                 damp_factor *= 100
                 fail += 1
@@ -442,7 +445,8 @@ class Profile(object):
         stat = self.calculate(update=True)
         if show_step:
             print("Iteration terminated.")
-        errors = np.array(np.sqrt(np.linalg.inv(alpha).diagonal())).flatten(),
+        errors = np.array(np.sqrt(
+            np.abs(np.linalg.inv(alpha).diagonal()))).flatten()
         return stat, errors
 
     def _stat_deriv(self, pnames=None):
@@ -460,7 +464,7 @@ class Profile(object):
         """
         pnames_free, pvalues_free = utils.get_free_parameter(self.model)
         current_model = copy.deepcopy(self.model)
-        shift = 1e-2
+        shift = 1e-4
         # calculate derivative for each parameter
         deriv = []
         pnames_deriv = []
@@ -481,9 +485,9 @@ class Profile(object):
             self.model.__setattr__(pnames_deriv[i], pvalues_deriv[i])
             stat0 = self.calculate(update=False)
             self.model.__setattr__(pnames_deriv[i],
-                                   pvalues_deriv[i] * (1 + shift))
+                                   1e-10 + pvalues_deriv[i] * (1 + shift))
             stat1 = self.calculate(update=False)
-            deriv_value = (stat1 - stat0) / pvalues_deriv[i] / shift
+            deriv_value = (stat1 - stat0) / (1e-10 + pvalues_deriv[i] * shift)
             if not np.isnan(deriv_value):
                 deriv += [deriv_value]
             else:
@@ -494,25 +498,27 @@ class Profile(object):
         return deriv
 
     def _stat_deriv_matrix(self):
+        shift = 1e-4
         pnames_free, pvalues_free = utils.get_free_parameter(self.model)
         current_model = copy.deepcopy(self.model)
         deriv_matrix = np.zeros([len(pnames_free), len(pnames_free)])
         for comb in itertools.combinations(np.arange(len(pnames_free)), 2):
             stat0 = self._stat_deriv(pnames=[pnames_free[comb[0]]])[0]
             self.model.__setattr__(pnames_free[comb[1]],
-                                   pvalues_free[comb[1]] * (1 + 1e-4))
+                                   pvalues_free[comb[1]] * (1 + shift) + 1e-10)
             stat1 = self._stat_deriv(pnames=[pnames_free[comb[0]]])[0]
             self.model = copy.deepcopy(current_model)
-            second_deriv = (stat1 - stat0) / pvalues_free[comb[1]] / 1e-4
+            second_deriv = (stat1 - stat0) / (
+                    1e-10 + pvalues_free[comb[1]] * shift)
             deriv_matrix[comb] = second_deriv
         deriv_matrix += deriv_matrix.T
         for i in range(len(pnames_free)):
             stat0 = self._stat_deriv(pnames=[pnames_free[i]])[0]
             self.model.__setattr__(pnames_free[i],
-                                   pvalues_free[i] * (1 + 1e-4))
+                                   pvalues_free[i] * (1 + shift) + 1e-10)
             stat1 = self._stat_deriv(pnames=[pnames_free[i]])[0]
             self.model = copy.deepcopy(current_model)
-            second_deriv = (stat1 - stat0) / pvalues_free[i] / 1e-4
+            second_deriv = (stat1 - stat0) / (1e-10 + pvalues_free[i] * shift)
             deriv_matrix[i, i] = second_deriv
         return np.mat(deriv_matrix)
 
