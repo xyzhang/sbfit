@@ -38,6 +38,12 @@ def get_free_parameter(model: Model):
     return pnames_free, pvalues_free
 
 
+def get_pixel_scale(header):
+    wcs = WCS(header)
+    pixel_scale = np.abs(np.diag(wcs.pixel_scale_matrix)[0])
+    return pixel_scale
+
+
 def get_parameter_bounds(model: Model, param_names):
     low_bounds = []
     up_bounds = []
