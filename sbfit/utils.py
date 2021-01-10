@@ -1,6 +1,8 @@
 import numpy as np
 from astropy.io import fits
 from astropy.modeling import Model, Fittable1DModel, Parameter
+from astropy.wcs import WCS
+from astropy.coordinates import SkyCoord
 
 
 def load_image(filename, extension=0):
@@ -13,6 +15,15 @@ def load_image(filename, extension=0):
     data = hdu[extension].data * 1.  # Convert to float type.
     hdu.close()
     return header, data
+
+
+def sky_to_pixel(x, y, header, unit="deg", frame="icrs"):
+    wcs = WCS(header)
+    coord = SkyCoord(x, y, unit=unit, frame=frame)
+    x_pix, y_pix = wcs.world_to_pixel(coord)
+    x_pix = float(x_pix)
+    y_pix = float(y_pix)
+    return x_pix, y_pix
 
 
 def get_free_parameter(model: Model):
