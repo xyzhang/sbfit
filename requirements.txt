@@ -1,0 +1,2 @@
+astropy>=4.2
+pyregion>=2.0

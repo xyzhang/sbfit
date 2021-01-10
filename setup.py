@@ -1,8 +1,9 @@
 from setuptools import setup, find_packages
+import sbfit
 
 setup(
     name='sbfit',
-    version='0.1.0',
+    version=sbfit.__version__,
     packages=find_packages(),
     url='https://gitlab.sron.nl/asg/x-ray-extended/sbfit',
     license='MIT License',

@@ -1,4 +1,9 @@
+"""
+This module defines classes of surface brightness profile models.
+"""
+
 from collections import OrderedDict
+
 import numpy as np
 from scipy import integrate
 from astropy.modeling import Model, Parameter
@@ -10,6 +15,9 @@ __all__ = ["custom_model", "Constant", "Gaussian", "DoublePowerLaw", "Beta",
 
 
 class BasicModel(Model):
+    """
+    The base class of all model classes, based on astropy.modelling.Model.
+    """
 
     def evaluate(self, *args):
         args = list(args)
@@ -27,9 +35,10 @@ class BasicModel(Model):
 
 def custom_model(func):
     """
-    An alternative version of astropy.modeling.custom_model
-    :param func:
-    :return:
+    Model class decorator.
+    An alternative version of astropy.modeling.custom_model.
+
+
     """
     return __model_wrapper(func)
 
@@ -47,7 +56,7 @@ def __model_wrapper(func):
     attr_dict.update({"__module__": "model",
                       "__doc__": func.__doc__,
                       "n_inputs": len(inputs),
-                      "n_outputs": len([inputs[0].name]),
+                      "n_outputs": 1,
                       "_func": staticmethod(func),
                       })
 
@@ -55,41 +64,84 @@ def __model_wrapper(func):
 
 
 @custom_model
-def Constant(x, c=0):
-    result = c
-    return result
+def Constant(x, c=0.):
+    """
+    Constant model.
+
+    Parameters
+    ----------
+    x : number or np.ndarray
+        The input number for calculation.
+    c : float
+        The output constant.
+
+    """
+    return c
 
 
 @custom_model
-def Gaussian(x, n=1, x0=0, sigma=1):
-    result = n * np.exp(-(x - x0) ** 2 / 2 / sigma ** 2)
+def Gaussian(x, norm=1, x0=0, sigma=1):
+    """
+    Gaussian profile model.
+
+    Parameters
+    ----------
+    x : number or np.ndarray
+        The input number for calculation.
+    norm : number
+        The normalization at the peak.
+    x0 : number
+        The center of the Gaussian profile.
+    sigma : number
+        The width of the profile.
+
+    """
+    result = norm * np.exp(-(x - x0) ** 2 / 2 / sigma ** 2)
     return result
 
 
 @custom_model
 def DoublePowerLaw(x, n=1, a1=0.1, a2=1.0, r=1.0, c=2.0):
     """
-    x: radius for calculation;
-    n: normalisation factor at the jump;
-    a1: power law index 1;
-    a: power law index 2;
-    r: jump location;
-    c: contraction factor.
+    Projected double power law profile.
 
-    x, r have a _unit of arcsec;
-    n has an arbitrary _unit.
+    Parameters
+    ----------
+    x : number
+        The input number for calculation.
+    n : number
+        The density (normalization) at the jump.
+    a1 : number
+        The power law index of the density profile before the jump.
+    a2 : number
+        The power law index of the density profile after the jump.
+    r : number
+        The jump location.
+    c : number
+        The strength of the jump, i.e., the contraction factor.
+
+    Notes
+    ----------
+    x, r have a unit of arcsec;
+    n has an arbitrary unit.
+
+    References
+    ----------
+    Owers et al. 2009, ApJ, 704, 1349.
+
     """
     if x < r:
-        f = n ** 2 * (c ** 2 * integrate.quad(_dpl_project, 1e-10,
-                                              np.sqrt(r ** 2 - x ** 2),
-                                              args=(x, r, a1))[0] +
-                      integrate.quad(_dpl_project, np.sqrt(r ** 2 - x ** 2),
-                                     np.inf, args=(x, r, a2))[0])
+        result = n ** 2 * (c ** 2 * integrate.quad(_dpl_project, 1e-10,
+                                                   np.sqrt(r ** 2 - x ** 2),
+                                                   args=(x, r, a1))[0] +
+                           integrate.quad(_dpl_project,
+                                          np.sqrt(r ** 2 - x ** 2),
+                                          np.inf, args=(x, r, a2))[0])
     else:
-        f = n ** 2 * \
-            integrate.quad(_dpl_project, 1e-5, np.inf, args=(x, r, a2))[0]
+        result = n ** 2 * \
+                 integrate.quad(_dpl_project, 1e-5, np.inf, args=(x, r, a2))[0]
 
-    return f
+    return result
 
 
 # divided functions for speed-up
@@ -99,8 +151,27 @@ def _dpl_project(z, x, r, a):
 
 
 @custom_model
-def Beta(x, s, b, r, constant):
-    return s * (1 + (x / r) ** 2) ** (0.5 - 3 * b) + constant
+def Beta(x, norm, beta, r):
+    """
+    Beta profile.
+
+    Parameters
+    ----------
+    x : number
+        The input number for calculation.
+    norm : number
+        The normalization at the center of the cluster.
+    beta : number
+        The beta parameter.
+    r : number
+        The core radius.
+
+    References
+    ----------
+    Cavaliere, A. & Fusco-Femiano, R. 1976, A&A, 500, 95
+    """
+    result = norm * (1 + (x / r) ** 2) ** (0.5 - 3 * beta)
+    return result
 
 
 @custom_model
@@ -109,10 +180,9 @@ def ConeDoublePowerLaw(x, n=1, a1=0, a2=1.0, b=10., c=2.0, z1=0.5, z2=1.0,
     x = x - center
 
     result = integrate.quad(
-        lambda t: t * _cone_sb(n, t, x / 180 * np.pi, b / 180 * np.pi, c,
-                               a1, a2,
-                               az, theta_max), z1, z2)[0] * 2 / (
-                     z2 ** 2 - z1 ** 2)
+        _cone_sb, z1, z2,
+        args=(n, x / 180 * np.pi, b / 180 * np.pi,
+              c, a1, a2, az, theta_max))[0] * 2 / (z2 ** 2 - z1 ** 2)
     return result
 
 
@@ -123,18 +193,39 @@ def _cone_n_sq(l, n0, z, phi, b, a, az):
     return (n0 * (phi0 / b) ** (-a) * rho ** (-az)) ** 2
 
 
-def _cone_sb(n0, z, phi, b, c, a1, a2, az, theta_max):
+def _cone_sb(z, n0, phi, b, c, a1, a2, az, theta_max):
+    """
+
+    Parameters
+    ----------
+    z : number
+    n0 : number
+    phi : number
+    b : number
+    c : number
+    a1 : number
+    a2 : number
+    az : number
+    theta_max : number
+
+    Returns
+    -------
+
+    """
     phi = np.abs(phi)
 
     out_bound = z * np.sqrt(
         1 - (np.cos(theta_max / 180 * np.pi) / np.cos(phi)) ** 2)
     if phi > b:
-        return 2 * integrate.quad(_cone_n_sq, 1e-7, out_bound,
-                                  args=(n0, z, phi, b, a2, az),
-                                  )[0]
+        result = 2 * integrate.quad(_cone_n_sq, 1e-7, out_bound,
+                                    args=(n0, z, phi, b, a2, az),
+                                    )[0]
     else:
         l_b = z * np.sqrt(np.cos(phi) ** 2 / np.cos(b) ** 2 - 1)
-        return 2 * (c ** 2 * integrate.quad(_cone_n_sq, 1e-7, l_b,
-                                            args=(n0, z, phi, b, a1, az))[0] +
-                    integrate.quad(_cone_n_sq, l_b, out_bound,
-                                   args=(n0, z, phi, b, a2, az))[0])
+        result = 2 * z * \
+                 (c ** 2 * integrate.quad(_cone_n_sq, 1e-7, l_b,
+                                          args=(n0, z, phi, b, a1, az))[0] +
+                  integrate.quad(_cone_n_sq, l_b, out_bound,
+                                 args=(n0, z, phi, b, a2, az))[0])
+
+    return result

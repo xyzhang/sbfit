@@ -32,8 +32,3 @@ def cstat(y, y_model):
     return cstat
 
 
-def cstat_deriv(y, y_model, err, model_deriv):
-    c_deriv = np.zeros(len(model_deriv))
-    for i in range(len(model_deriv)):
-        c_deriv[i] = 2 * np.nansum(model_deriv[i] * (1 - y / y_model))
-    return c_deriv

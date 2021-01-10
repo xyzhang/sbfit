@@ -1,11 +1,21 @@
+"""
+This module defines all supported DS9 region classes.
+
+Regions are classified as inclusive regions and exclusive regions. Inclusive
+regions are used for defining the profile extraction region shape and
+direction, while exclusive regions are used to mask out contaminated pixels.
+Inclusive regions are "Panda", "Epanda", and "Projection". Exclusive regions
+are "Circle" and "Ellipse".
+
+Currently, the supported coordinate frames are "fk5", "icrs", and "image".
+
+"""
+
 import abc
 
-import numpy as np
 import pyregion
-from astropy import units, coordinates
+import numpy as np
 from astropy.io import fits
-from astropy.wcs import WCS
-import matplotlib.pyplot as plt
 
 from . import utils
 
@@ -13,8 +23,24 @@ __all__ = ["read_region", "RegionList", "IncludeRegion", "ExcludeRegion",
            "Circle", "Ellipse",
            "Epanda", "Panda", "Projection"]
 
+VALID_FRAME = ["fk5", "icrs", "image"]
+
 
 def read_region(region_file):
+    """
+    Read a DS9 region file and create a region list.
+
+    Parameters
+    ----------
+    region_file : str
+        The DS9 region file.
+
+    Returns
+    -------
+    region_list : RegionList
+        The region list contains all supported regions that in the region file.
+
+    """
     pyregion_list = pyregion.open(region_file)
     region_list = RegionList()
     region_list.frame = pyregion_list[0].coord_format
@@ -48,27 +74,48 @@ def read_region(region_file):
 
 
 class Region(object):
+    """
+    The base class of all region classes.
+    """
 
-    def __init__(self):
-        self._parameters = {}
-        self._frame = "fk5"
+    _parameters = {}
+    """The parameter dictionary."""
+
+    _frame = "fk5"
+    """The coordinate frame of the region."""
 
     @property
     def frame(self):
+        """The coordinate frame of the region."""
         return self._frame
 
     @frame.setter
     def frame(self, coord_type):
-        if coord_type in ["fk5", "icrs", "image"]:
+        """The coordinate frame of the region."""
+        if coord_type in VALID_FRAME:
             self._frame = coord_type
         else:
             raise TypeError(f"Frame type {coord_type} is invalid.")
 
     @property
     def parameters(self):
+        """The parameter dictionary."""
         return self._parameters
 
     def set_parameters(self, **kwargs):
+        """
+        Update parameters for the region.
+
+        Parameters
+        ----------
+        kwargs : region parameters
+            See [1] for definitions.
+
+        References
+        ----------
+        [1] http://ds9.si.edu/doc/ref/region.html
+
+        """
         for key in kwargs:
             if key not in self._parameters:
                 raise KeyError(f'"{key}" is not a region parameter.')
@@ -79,15 +126,19 @@ class Region(object):
     @staticmethod
     def _create_coord(imgdata):
         """
+        Create X, Y mesh grids with the size of the image data.
 
         Parameters
         ----------
-        imgdata : np.ndarray
+        imgdata : ndarray
+            The image data.
 
         Returns
         -------
-        xcoor : np.ndarray
-        ycoor : np.ndarray
+        xcoor : ndarray
+            The mesh grid of X coordinate.
+        ycoor : ndarray
+            The mesh grid of Y coordinate.
 
         """
         sy, sx = imgdata.shape
@@ -101,20 +152,35 @@ class Region(object):
 
 
 class IncludeRegion(Region):
+    """
+    The base class of all inclusive regions.
+    """
 
     def get_xy(self, imgdata, header=None, axis="x"):
         """
+        For a given image, calculate the X, Y coordinate on the profile for
+        each pixel. Meanwhile, an inclusive mask based on the region shape is
+        calculated.
 
         Parameters
         ----------
-        imgdata : np.ndarray
+        imgdata : ndarray
+            The input image array to calculate X, Y coordinate based on the
+            extraction region.
         header : fits.Header
-        axis : {"x", "y"}
+            The FITS header of the input image, which is used for convert
+            sky coordinate to the image coordinate.
+        axis : {"x", "y"}, optional
+            The extracted profile direction.
+            "X": azimuthally averaged radial profile.
+            "Y": radially averaged azimuthal profile (only supported by Panda).
 
         Returns
         -------
-        profile_xcoor : np.ndarray
-        profile_ycoor : np.ndarray
+        profile_xcoor : ndarray
+            Calculated X coordinate of each pixel.
+        profile_mask : ndarray
+            The include mask of the region.
 
         """
         img_xcoor, img_ycoor = self._create_coord(imgdata)
@@ -124,25 +190,53 @@ class IncludeRegion(Region):
 
     @abc.abstractmethod
     def _get_xy_func(self, img_xcoor, img_ycoor, header, axis):
-        pass
+        """
+        An abstract method for each inclusive region class, which is defined
+        for calculating the X coordinate of each pixel in a profile.
+        """
 
 
 class ExcludeRegion(Region):
+    """
+    The base class of all exclusive regions.
+    """
 
     def mask(self, imgdata, header=None):
+        """
+
+        Parameters
+        ----------
+        imgdata : ndarray
+            The input image array based on which the exclusion mask is defined.
+        header : fits.Header
+            The FITS header of the input image, which is used for convert
+            sky coordinate to the image coordinate.
+
+        Returns
+        -------
+        mask : ndarray
+            The calculated mask.
+
+        """
         img_xcoor, img_ycoor = self._create_coord(imgdata)
         mask = self._mask_func(img_xcoor, img_ycoor, header)
         return np.flip(mask, axis=0)
 
     @abc.abstractmethod
     def _mask_func(self, img_xcoor, img_ycoor, header):
+        """
+        An abstract method for each exclusive region class, which is defined
+        for calculating the exclusive mask.
+        """
         pass
 
 
 class Circle(ExcludeRegion):
+    """
+    The Circle region.
+    """
 
     def __init__(self):
-        super().__init__()
         self._parameters = {"x": None,
                             "y": None,
                             "radius": None}
@@ -165,9 +259,11 @@ class Circle(ExcludeRegion):
 
 
 class Ellipse(ExcludeRegion):
+    """
+    The Ellipse region.
+    """
 
     def __init__(self):
-        super().__init__()
         self._parameters = {"x": 0.,
                             "y": 0.,
                             "major": 1.,
@@ -213,9 +309,11 @@ class Ellipse(ExcludeRegion):
 
 
 class Projection(IncludeRegion):
+    """
+    The Projection region.
+    """
 
     def __init__(self):
-        super().__init__()
         self._parameters = {"x1": None,
                             "y1": None,
                             "x2": None,
@@ -262,9 +360,11 @@ class Projection(IncludeRegion):
 
 
 class Epanda(IncludeRegion):
+    """
+    The Epanda region.
+    """
 
     def __init__(self):
-        super().__init__()
         self._parameters = {"x": 0.,
                             "y": 0.,
                             "startangle": 0.,
@@ -278,6 +378,11 @@ class Epanda(IncludeRegion):
                             "angle": 0}
 
     def _get_xy_func(self, img_xcoor, img_ycoor, header, axis):
+        if axis == "x":
+            pass
+        else:
+            raise ValueError(
+                "Projection region only supports 'x' axis profile.")
         x = self.parameters["x"]
         y = self.parameters["y"]
         startangle = self.parameters["startangle"]
@@ -325,33 +430,25 @@ class Epanda(IncludeRegion):
         startangle += angle
         stopangle += angle
 
-        if axis == "x":
-            if stopangle > 360:
-                profile_mask = np.logical_or(
-                    np.logical_and(azimuth >= 0,
-                                   azimuth <= stopangle - 360),
-                    np.logical_and(azimuth >= startangle,
-                                   azimuth < 360)
-                )
-            else:
-                profile_mask = np.logical_and(azimuth >= startangle,
-                                              azimuth <= stopangle)
-            return r, profile_mask
-        elif axis == "y":
-            profile_mask = np.logical_and(r >= innermajor,
-                                          r <= outermajor)
-            azimuth -= startangle
-            negtive_mask = azimuth < 0
-            azimuth[negtive_mask] += 360
-            return azimuth, profile_mask
+        if stopangle > 360:
+            profile_mask = np.logical_or(
+                np.logical_and(azimuth >= 0,
+                               azimuth <= stopangle - 360),
+                np.logical_and(azimuth >= startangle,
+                               azimuth < 360)
+            )
         else:
-            raise ValueError("Axis must be 'x' or 'y'.")
+            profile_mask = np.logical_and(azimuth >= startangle,
+                                          azimuth <= stopangle)
+        return r, profile_mask
 
 
 class Panda(IncludeRegion):
+    """
+    The Panda region.
+    """
 
     def __init__(self):
-        super().__init__()
         self._parameters = {"x": 0.,
                             "y": 0.,
                             "startangle": 0.,
@@ -419,32 +516,60 @@ class Panda(IncludeRegion):
 
 
 class RegionList(object):
+    """
+    This is a container of a number of region objects. The RegionList object
+    can have one inclusive region and multiple exclusive regions.
+
+    Parameters
+    ----------
+    frame : {"fk5", "icrs", "image"}, optional
+        The image coordinate frame of the regions. The default frame = "fk5".
+
+    """
+
+    _include = IncludeRegion()
+
+    _exclude = []
+
+    _frame = "fk5"
 
     def __init__(self, frame="fk5"):
-        self._include = IncludeRegion()
-        self._exclude = []
-        self._frame = frame
+        self.frame = frame
 
     @property
     def include(self):
+        """The inclusive region."""
         return self._include
 
     @property
     def exclude(self):
+        """The exclusive region list."""
         return self._exclude
 
     @property
     def frame(self):
+        """The region coordinate frame."""
         return self._frame
 
     @frame.setter
     def frame(self, coord_type):
-        if coord_type in ["fk5", "icrs", "image"]:
+        if coord_type in VALID_FRAME:
             self._frame = coord_type
         else:
-            raise TypeError(f"Frame type {coord_type} is invalid.")
+            raise TypeError(f"Frame type {coord_type} is invalid. Only"
+                            f"{VALID_FRAME} types are supported.")
 
     def add_region(self, region):
+        """
+        Update the inclusive region or add an exclusive region into the current
+        exclusive region list.
+
+        Parameters
+        ----------
+        region : Region
+            The region object to be updated or added.
+
+        """
         if isinstance(region, IncludeRegion):
             self._include = region
         elif isinstance(region, ExcludeRegion):
