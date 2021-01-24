@@ -15,6 +15,8 @@ from astropy import units as u
 from astropy.convolution import Model1DKernel, Gaussian1DKernel, convolve, \
     Kernel
 import matplotlib.pyplot as plt
+from matplotlib.ticker import NullFormatter
+from matplotlib.gridspec import GridSpec
 import emcee
 import corner
 
@@ -312,12 +314,15 @@ class Profile(object):
         if self.model is None:
             Warning("No model found")
             return None
+        elif self._binned_profile is None:
+            Warning("Rebin the profile first.")
+            return None
         else:
             self.model: modeling.Model
             valid_range_start = self._bin_grid[0] \
-                                - self._smooth_fwhm * self._channel_width
+                                - 2 * self._smooth_fwhm * self._channel_width
             valid_range_end = self._bin_grid[-1] \
-                              + self._smooth_fwhm * self._channel_width
+                              + 2 * self._smooth_fwhm * self._channel_width
             valid_grid_mask = np.logical_and(
                 self._raw_profile["r"] <= valid_range_end,
                 self._raw_profile["r"] >= valid_range_start)
@@ -392,12 +397,16 @@ class Profile(object):
             # set model
             if kernel_type == "gaussian":
                 psf_kernel = Gaussian1DKernel(sigma / self._channel_width)
+                self._smooth_fwhm = 2.355 * sigma / self._channel_width
             elif kernel_type == "king":
                 psf_model = King(rc=king_rc / self._channel_width,
                                  alpha=king_alpha)
                 psf_kernel = Model1DKernel(
                     psf_model,
                     x_size=(8 * king_rc / self._channel_width) // 2 * 2 + 1)
+                self._smooth_fwhm = 2 * king_rc * \
+                                    np.sqrt(2 ** (
+                                            1 / king_alpha) - 1) / self._channel_width
             elif kernel_type == "custom":
                 if isinstance(custom_kernel, Kernel):
                     psf_kernel = custom_kernel
@@ -412,9 +421,9 @@ class Profile(object):
             for i in range(n_channel):
                 smooth_array[i] = convolve(smooth_array[i], psf_kernel)
 
-        self._smooth_matrix = np.mat(smooth_array)
+        self._smooth_matrix = np.mat(smooth_array).T
 
-    def plot(self, plot_type="profile", scale="loglog"):
+    def plot(self, plot_type="profile", scale="loglog", xlim=None, ylim=None):
         """
         To show different types of data.
 
@@ -434,15 +443,21 @@ class Profile(object):
 
         """
         if plot_type == "profile":
-            fig: plt.Figure = plt.figure()
-            ax: plt.Axes = fig.gca()
-            ax.errorbar(self._binned_profile["r"],
-                        self._binned_profile["sb"],
-                        xerr=(self._binned_profile["r_error_right"],
-                              self._binned_profile["r_error_left"]),
-                        yerr=self._binned_profile["sb_error"], ls="",
-                        label="data", color="tab:blue")
-            ax.step(np.append(
+            fig: plt.Figure = plt.figure(figsize=(6, 6))
+            grid_spec = GridSpec(2, 1, figure=fig, hspace=0.0,
+                                 height_ratios=(4, 1))
+            # ax_profile: plt.Axes = fig.gca()
+            ax_profile: plt.Axes = fig.add_subplot(grid_spec[0, :])
+            ax_chi: plt.Axes = fig.add_subplot(grid_spec[1, :])
+
+            # plot the profile
+            ax_profile.errorbar(self._binned_profile["r"],
+                                self._binned_profile["sb"],
+                                xerr=(self._binned_profile["r_error_right"],
+                                      self._binned_profile["r_error_left"]),
+                                yerr=self._binned_profile["sb_error"], ls="",
+                                label="data", color="tab:blue")
+            ax_profile.step(np.append(
                 self._binned_profile["r"] - self._binned_profile[
                     "r_error_left"],
                 np.array(self._binned_profile["r"][-1] +
@@ -451,7 +466,7 @@ class Profile(object):
                           np.array(self._binned_profile["bkg_sb"][-1])),
                 where="post", label="background", color="tab:green",
                 alpha=0.7)
-            ax.fill_between(np.append(
+            ax_profile.fill_between(np.append(
                 self._binned_profile["r"] - self._binned_profile[
                     "r_error_left"],
                 np.array(self._binned_profile["r"][-1] +
@@ -465,37 +480,87 @@ class Profile(object):
                           np.array(self._binned_profile["bkg_sb"][-1]) +
                           self._binned_profile["bkg_sb_error"][-1]),
                 step="post", alpha=0.3, color="tab:green")
-            ax.step(np.append(self._binned_profile["r"] -
-                              self._binned_profile["r_error_left"],
-                              np.array(self._binned_profile["r"][-1] +
-                                       self._binned_profile["r_error_right"][
-                                           -1]
-                                       )),
-                    np.append(self._binned_profile["model_sb"],
-                              np.array(self._binned_profile["model_sb"][-1])),
-                    where="post", label="model", color="tab:orange")
+            ax_profile.step(np.append(self._binned_profile["r"] -
+                                      self._binned_profile["r_error_left"],
+                                      np.array(self._binned_profile["r"][-1] +
+                                               self._binned_profile[
+                                                   "r_error_right"][
+                                                   -1]
+                                               )),
+                            np.append(self._binned_profile["model_sb"],
+                                      np.array(
+                                          self._binned_profile["model_sb"][
+                                              -1])),
+                            where="post", label="model", color="tab:orange")
+
+            # plot chi
+            if self._model is None:
+                warnings.warn("No model set.")
+            else:
+                ax_chi.errorbar(self._binned_profile["r"],
+                                (self._binned_profile["sb"] -
+                                 self._binned_profile["model_sb"]) /
+                                self._binned_profile["sb_error"],
+                                xerr=(self._binned_profile["r_error_right"],
+                                      self._binned_profile["r_error_left"]),
+                                yerr=np.ones_like(self._binned_profile["r"]),
+                                color="tab:blue", ls=""
+                                )
+                ax_chi.hlines(0,
+                              xmin=self._binned_profile["r"][0] -
+                                   self._binned_profile["r_error_left"][0],
+                              xmax=self._binned_profile["r"][-1] +
+                                   self._binned_profile["r_error_right"][-1],
+                              colors="tab:orange", linestyles="dashed"
+                              )
+
+            # scale
             if scale == "loglog":
-                ax.loglog()
+                ax_profile.loglog()
+                ax_chi.semilogx()
             elif scale == "semilogx":
-                ax.semilogx()
+                ax_profile.semilogx()
+                ax_chi.semilogx()
             elif scale == "semilogy":
-                ax.semilogy()
+                ax_profile.semilogy()
             elif scale == "linear":
                 pass
             else:
                 raise ValueError("Scale must be one of {'linear', 'loglog',"
                                  "'semilogx', 'semilogy'}.")
+
+            # limits
+            if xlim is not None:
+                ax_profile.set_xlim(xlim)
+            else:
+                pass
+            if ylim is not None:
+                ax_profile.set_ylim(ylim)
+            else:
+                pass
+
+            ax_chi.set_ylim(-4, 4)
+            xlim_profile = ax_profile.get_xlim()
+            ax_chi.set_xlim(*xlim_profile)
+
+            # ticklables
+            ax_profile.xaxis.set_major_formatter(NullFormatter())
+            ax_profile.xaxis.set_minor_formatter(NullFormatter())
+
+            # x-axis unit
             if self._profile_axis == "x":
-                ax.set_xlabel("r (arcsec)")
+                ax_chi.set_xlabel("r (arcsec)")
             elif self._profile_axis == "y":
-                ax.set_xlabel("$\\theta$ (degree)")
+                ax_chi.set_xlabel("$\\theta$ (degree)")
             ylabel_unit = \
                 f"{u.count / u.arcmin ** 2 / self._exposure_unit:latex_inline}"
-            ax.set_ylabel(
-                f"SB ({ylabel_unit})")
-            ax.legend()
+            ax_profile.set_ylabel(f"SB ({ylabel_unit})")
+            ax_chi.set_ylabel("$\\chi$")
+
+            ax_profile.legend()
             plt.show()
             plt.close(fig)
+
         elif plot_type == "mcmc_chain":
             if self._mcmc_sampler is None:
                 warnings.warn("No sampler found, please run mcmc_error first.")
@@ -505,11 +570,11 @@ class Profile(object):
                                          sharex="all")
                 labels, _ = utils.get_free_parameter(self.model)
                 for i in range(samples.shape[2]):
-                    ax = axes[i]
-                    ax.plot(samples[:, :, i], "k", alpha=0.3)
-                    ax.set_xlim(0, len(samples))
-                    ax.set_ylabel(labels[i])
-                    ax.yaxis.set_label_coords(-0.1, 0.5)
+                    ax_profile = axes[i]
+                    ax_profile.plot(samples[:, :, i], "k", alpha=0.3)
+                    ax_profile.set_xlim(0, len(samples))
+                    ax_profile.set_ylabel(labels[i])
+                    ax_profile.yaxis.set_label_coords(-0.1, 0.5)
 
                 axes[-1].set_xlabel("step number")
                 plt.show()
@@ -562,7 +627,7 @@ class Profile(object):
                         f"{item}:\t"
                         f"{self.model.__getattribute__(item).value:.2e}")
                 print(f"Uncertainties from rough estimation:")
-                [print(f"{pnames_free[i]}: {error[i]:.3e}") for i in
+                [print(f"{pnames_free[i]}:\t{error[i]:.3e}") for i in
                  range(len(pnames_free))]
             if record_fit:
                 self._min_stat = stat
@@ -624,8 +689,6 @@ class Profile(object):
                 self.model.__setattr__(pnames_free[i], new_pvalues_free[i])
             new_stat = self.calculate(update=False)
 
-            if show_step:
-                print(f"C-stat: {new_stat:.3f}\n{new_pvalues_free}")
             if stat - new_stat <= 0:  # new stat > current stat
                 damp_factor *= 100
                 fail += 1
@@ -637,6 +700,10 @@ class Profile(object):
                 fail = 0
                 stat = new_stat
                 _, pvalues_free = utils.get_free_parameter(self.model)
+                if show_step:
+                    print(f"C-stat: {new_stat:.3f}\n{new_pvalues_free}")
+                else:
+                    pass
 
         stat = self.calculate(update=True)
 
@@ -730,59 +797,59 @@ class Profile(object):
             deriv_matrix[i, i] = second_deriv
         return np.mat(deriv_matrix)
 
-    #    def error_estimate_delta_stat(self, param: str, sigma=1, show_step=True):
+    # def error_estimate_delta_stat(self, param: str, sigma=1, show_step=True):
     #
-    #        self.model: modeling.Model
-    #        if self._min_stat is None:  # check if self._min_stat exists
-    #            warnings.warn("Fit the profile first.")
-    #        elif param not in self.model.param_names:  # check if the model has
-    #            # the parameter
-    #            warnings.warn(f"Parameter '{param}' is not in the model.")
-    #        elif self.model.fixed[param]:
-    #            warnings.warn(f"Parameter '{param}' is fixed.")
-    #        else:
-    #            param_value = self.model.__getattribute__(param).value
+    #     self.model: modeling.Model
+    #     if self._min_stat is None:  # check if self._min_stat exists
+    #         warnings.warn("Fit the profile first.")
+    #     elif param not in self.model.param_names:  # check if the model has
+    #         # the parameter
+    #         warnings.warn(f"Parameter '{param}' is not in the model.")
+    #     elif self.model.fixed[param]:
+    #         warnings.warn(f"Parameter '{param}' is fixed.")
+    #     else:
+    #         param_value = self.model.__getattribute__(param).value
     #
-    #            best_model = copy.deepcopy(
-    #                self.model)  # a backup of the best-fit model
+    #         best_model = copy.deepcopy(
+    #             self.model)  # a backup of the best-fit model
     #
-    #            # solve the function delta-cstat = 1
-    #            self.model.fixed[param] = True
-    #            self.model.bounds[param] = (
-    #                param_value,
-    #                best_model.bounds[param][1])  # constraint lower limit
-    #            init_error = self._error_approx[param] * np.array([1, -1])
-    #            error = []
-    #            for i in range(2):
-    #                root = optimize.root_scalar(self._root_solve_func,
-    #                                            x0=param_value + init_error[
-    #                                                i] * sigma,
-    #                                            args=(
-    #                                                param, sigma ** 2, show_step),
-    #                                            method="newton",
-    #                                            fprime=self._root_solve_derivative,
-    #                                            xtol=1e-2)
-    #                print(root)
-    #                error[i] = root[0]
+    #         # solve the function delta-cstat = 1
+    #         self.model.fixed[param] = True
+    #         self.model.bounds[param] = (
+    #             param_value,
+    #             best_model.bounds[param][1])  # constraint lower limit
+    #         init_error = self._error_approx[param] * np.array([1, -1])
+    #         error = []
+    #         for i in range(2):
+    #             root = optimize.root_scalar(self._root_solve_func,
+    #                                         x0=param_value + init_error[
+    #                                             i] * sigma,
+    #                                         args=(
+    #                                             param, sigma ** 2, show_step),
+    #                                         method="newton",
+    #                                         fprime=self._root_solve_derivative,
+    #                                         xtol=1e-2)
+    #             print(root)
+    #             error[i] = root[0]
     #
-    #            self.model = best_model
+    #         self.model = best_model
     #
-    #    def _root_solve_func(self, x, param, dstat, show_step):
+    # def _root_solve_func(self, x, param, dstat, show_step):
     #
-    #        self.model.__setattr__(param, x)
-    #        stat = self.fit(show_step=False, show_result=False, record_fit=False,
-    #                        tolerance=1e-2)
-    #        if show_step:
-    #            print(
-    #                f"{param} = {x:.2f}; delta C-stat = {stat - self._min_stat:.3e}")
-    #        return stat - self._min_stat - dstat
+    #     self.model.__setattr__(param, x)
+    #     stat = self.fit(show_step=False, show_result=False, record_fit=False,
+    #                     tolerance=1e-2)
+    #     if show_step:
+    #         print(
+    #             f"{param} = {x:.2f}; delta C-stat = {stat - self._min_stat:.3e}")
+    #     return stat - self._min_stat - dstat
     #
-    #    def _root_solve_derivative(self, x, param, dstat, show_step):
-    #        self.model.__setattr__(param, x * (1 + 1e-4))
-    #        stat1 = self.fit(show_step=False, show_result=False, record_fit=False)
-    #        self.model.__setattr__(param, x)
-    #        stat0 = self.fit(show_step=False, show_result=False, record_fit=False)
-    #        return (stat1 - stat0) / (x * 1e-4)
+    # def _root_solve_derivative(self, x, param, dstat, show_step):
+    #     self.model.__setattr__(param, x * (1 + 1e-4))
+    #     stat1 = self.fit(show_step=False, show_result=False, record_fit=False)
+    #     self.model.__setattr__(param, x)
+    #     stat0 = self.fit(show_step=False, show_result=False, record_fit=False)
+    #     return (stat1 - stat0) / (x * 1e-4)
 
     def mcmc_error(self, nsteps=5000, nwalkers=32, burnin=500):
         """

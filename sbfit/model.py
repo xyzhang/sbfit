@@ -55,7 +55,7 @@ def __model_wrapper(func):
 
     attr_dict.update({"__module__": "model",
                       "__doc__": func.__doc__,
-                      "n_inputs": len(inputs),
+                      "n_inputs": 1,
                       "n_outputs": 1,
                       "_func": staticmethod(func),
                       })
@@ -64,7 +64,7 @@ def __model_wrapper(func):
 
 
 @custom_model
-def Constant(x, c=0.):
+def Constant(x, norm=0.):
     """
     Constant model.
 
@@ -72,11 +72,11 @@ def Constant(x, c=0.):
     ----------
     x : number or np.ndarray
         The input number for calculation.
-    c : float
+    norm : float
         The output constant.
 
     """
-    return c
+    return norm
 
 
 @custom_model
@@ -101,7 +101,7 @@ def Gaussian(x, norm=1, x0=0, sigma=1):
 
 
 @custom_model
-def DoublePowerLaw(x, n=1, a1=0.1, a2=1.0, r=1.0, c=2.0):
+def DoublePowerLaw(x, norm=1, a1=0.1, a2=1.0, r=1.0, c=2.0):
     """
     Projected double power law profile.
 
@@ -109,8 +109,8 @@ def DoublePowerLaw(x, n=1, a1=0.1, a2=1.0, r=1.0, c=2.0):
     ----------
     x : number
         The input number for calculation.
-    n : number
-        The density (normalization) at the jump.
+    norm : number
+        The density normalization at the jump.
     a1 : number
         The power law index of the density profile before the jump.
     a2 : number
@@ -131,14 +131,14 @@ def DoublePowerLaw(x, n=1, a1=0.1, a2=1.0, r=1.0, c=2.0):
 
     """
     if x < r:
-        result = n ** 2 * (c ** 2 * integrate.quad(_dpl_project, 1e-10,
+        result = norm ** 2 * (c ** 2 * integrate.quad(_dpl_project, 1e-10,
                                                    np.sqrt(r ** 2 - x ** 2),
                                                    args=(x, r, a1))[0] +
                            integrate.quad(_dpl_project,
                                           np.sqrt(r ** 2 - x ** 2),
                                           np.inf, args=(x, r, a2))[0])
     else:
-        result = n ** 2 * \
+        result = norm ** 2 * \
                  integrate.quad(_dpl_project, 1e-5, np.inf, args=(x, r, a2))[0]
 
     return result
@@ -151,7 +151,7 @@ def _dpl_project(z, x, r, a):
 
 
 @custom_model
-def Beta(x, norm, beta, r):
+def Beta(x, norm=1., beta=1., r=1.):
     """
     Beta profile.
 
@@ -175,13 +175,13 @@ def Beta(x, norm, beta, r):
 
 
 @custom_model
-def ConeDoublePowerLaw(x, n=1, a1=0, a2=1.0, b=10., c=2.0, z1=0.5, z2=1.0,
+def ConeDoublePowerLaw(x, norm=1, a1=0, a2=1.0, b=10., c=2.0, z1=0.5, z2=1.0,
                        az=0.0, theta_max=70, center=0):
     x = x - center
 
     result = integrate.quad(
         _cone_sb, z1, z2,
-        args=(n, x / 180 * np.pi, b / 180 * np.pi,
+        args=(norm, x / 180 * np.pi, b / 180 * np.pi,
               c, a1, a2, az, theta_max))[0] * 2 / (z2 ** 2 - z1 ** 2)
     return result
 

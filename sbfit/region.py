@@ -403,7 +403,7 @@ class Epanda(IncludeRegion):
             innerminor /= pixel_scale
 
         average_angle = (startangle + stopangle) / 2
-        c = np.sqrt(outermajor ** 2 - outerminor ** 2)
+        c = np.sqrt(np.abs(outermajor ** 2 - outerminor ** 2))
 
         mask_1 = np.logical_and(img_xcoor - x >= 0, img_ycoor - y >= 0)
         mask_2 = np.logical_and(img_xcoor - x < 0, img_ycoor - y >= 0)

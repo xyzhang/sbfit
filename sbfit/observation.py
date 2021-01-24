@@ -9,6 +9,7 @@ from astropy import units as u
 from .image import CtsImage, ExpImage, BkgImage
 from .profile import Profile
 from .region import RegionList, ExcludeRegion
+from .utils import get_pixel_scale
 
 __all__ = ["Observation", "ObservationList"]
 
@@ -263,6 +264,9 @@ class ObservationList(object):
             profile_x, valid_mask = \
                 region_list.include.get_xy(image_grid, obs.cts_image.header,
                                            axis=profile_axis)
+
+            pixel_scale = get_pixel_scale(obs.cts_image.header) * 3600 # arcsec
+            profile_x *= pixel_scale
 
             valid_mask = np.logical_and(valid_mask, image_grid > 0)
 
