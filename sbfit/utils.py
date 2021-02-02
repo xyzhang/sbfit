@@ -1,4 +1,5 @@
 import numpy as np
+from scipy import optimize
 from astropy.io import fits
 from astropy.modeling import Model, Fittable1DModel, Parameter
 from astropy.wcs import WCS
@@ -71,3 +72,51 @@ class King(Fittable1DModel):
 
     def evaluate(self, x, amplitude, rc, r0, alpha):
         return amplitude * (1 + (x - r0) ** 2 / rc ** 2) ** -alpha
+
+
+def get_uncertainty(sample):
+    """
+    Calculate the mode and 1sigma uncertainties for a given discrete sample.
+
+    Parameters
+    ----------
+    sample : Array
+
+    Returns
+    -------
+
+    """
+
+    bin_width = np.diff(np.percentile(sample, [16, 84]))[0] / 10
+    bin_number = int((np.max(sample) - np.min(sample)) / bin_width)
+    norm, grid = np.histogram(sample, bins=bin_number)
+    grid_center = 0.5 * (grid[:-1] + grid[1:])
+    print(grid)
+
+    mode_index = np.argmax(norm)
+    mode_norm = norm[mode_index]
+    mode = grid_center[mode_index]
+
+    def frac(height, norm_list, show_index=False):
+        low_index = np.where(norm_list > height)[0][0] - 1
+        up_index = np.where(norm_list > height)[0][-1] + 1
+        out_fraction = (np.sum(norm_list[:low_index]) + np.sum(
+            norm_list[up_index:])) / np.sum(norm_list)
+        if show_index:
+            return out_fraction, low_index, up_index
+        else:
+            return out_fraction
+
+    i = 1
+    while frac(mode_norm - i, norm) > .318:
+        i += 1
+    else:
+        _, low, up = frac(mode_norm - i, norm, show_index=True)
+
+    low_error = mode - grid_center[low]
+    up_error = grid_center[up] - mode
+
+    return mode, up_error, low_error
+
+
+
