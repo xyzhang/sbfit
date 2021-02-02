@@ -262,8 +262,8 @@ class ObservationList(object):
 
             # calculate x and y for each pixel
             profile_x, valid_mask = \
-                region_list.include.get_xy(image_grid, obs.cts_image.header,
-                                           axis=profile_axis)
+                region_list.include.get_x_coordinate(image_grid, obs.cts_image.header,
+                                                     axis=profile_axis)
 
             pixel_scale = get_pixel_scale(obs.cts_image.header) * 3600 # arcsec
             profile_x *= pixel_scale

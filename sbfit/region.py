@@ -156,9 +156,9 @@ class IncludeRegion(Region):
     The base class of all inclusive regions.
     """
 
-    def get_xy(self, imgdata, header=None, axis="x"):
+    def get_x_coordinate(self, imgdata, header=None, axis="x"):
         """
-        For a given image, calculate the X, Y coordinate on the profile for
+        For a given image, calculate the X coordinate on the profile for
         each pixel. Meanwhile, an inclusive mask based on the region shape is
         calculated.
 
@@ -184,12 +184,12 @@ class IncludeRegion(Region):
 
         """
         img_xcoor, img_ycoor = self._create_coord(imgdata)
-        profile_xcoor, profile_mask = self._get_xy_func(img_xcoor, img_ycoor,
-                                                        header, axis)
+        profile_xcoor, profile_mask = self._get_x_coordinate_func(img_xcoor, img_ycoor,
+                                                                  header, axis)
         return np.flip(profile_xcoor, axis=0), np.flip(profile_mask, axis=0)
 
     @abc.abstractmethod
-    def _get_xy_func(self, img_xcoor, img_ycoor, header, axis):
+    def _get_x_coordinate_func(self, img_xcoor, img_ycoor, header, axis):
         """
         An abstract method for each inclusive region class, which is defined
         for calculating the X coordinate of each pixel in a profile.
@@ -320,7 +320,7 @@ class Projection(IncludeRegion):
                             "y2": None,
                             "width": None}
 
-    def _get_xy_func(self, img_xcoor, img_ycoor, header, axis):
+    def _get_x_coordinate_func(self, img_xcoor, img_ycoor, header, axis):
         if axis == "x":
             pass
         else:
@@ -377,7 +377,7 @@ class Epanda(IncludeRegion):
                             "nradius": 1,
                             "angle": 0}
 
-    def _get_xy_func(self, img_xcoor, img_ycoor, header, axis):
+    def _get_x_coordinate_func(self, img_xcoor, img_ycoor, header, axis):
         if axis == "x":
             pass
         else:
@@ -459,7 +459,7 @@ class Panda(IncludeRegion):
                             "nradius": 1,
                             "angle": 0}
 
-    def _get_xy_func(self, img_xcoor, img_ycoor, header, axis):
+    def _get_x_coordinate_func(self, img_xcoor, img_ycoor, header, axis):
         x = self.parameters["x"]
         y = self.parameters["y"]
         startangle = self.parameters["startangle"]
