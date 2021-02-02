@@ -132,11 +132,11 @@ def DoublePowerLaw(x, norm=1, a1=0.1, a2=1.0, r=1.0, c=2.0):
     """
     if x < r:
         result = norm ** 2 * (c ** 2 * integrate.quad(_dpl_project, 1e-10,
-                                                   np.sqrt(r ** 2 - x ** 2),
-                                                   args=(x, r, a1))[0] +
-                           integrate.quad(_dpl_project,
-                                          np.sqrt(r ** 2 - x ** 2),
-                                          np.inf, args=(x, r, a2))[0])
+                                                      np.sqrt(r ** 2 - x ** 2),
+                                                      args=(x, r, a1))[0] +
+                              integrate.quad(_dpl_project,
+                                             np.sqrt(r ** 2 - x ** 2),
+                                             np.inf, args=(x, r, a2))[0])
     else:
         result = norm ** 2 * \
                  integrate.quad(_dpl_project, 1e-5, np.inf, args=(x, r, a2))[0]
@@ -175,57 +175,86 @@ def Beta(x, norm=1., beta=1., r=1.):
 
 
 @custom_model
-def ConeDoublePowerLaw(x, norm=1, a1=0, a2=1.0, b=10., c=2.0, z1=0.5, z2=1.0,
-                       az=0.0, theta_max=70, center=0):
+def ConeDoublePowerLaw(x, norm=1, a1=0, a2=1.0, phi_b=10., c=2.0, z1=0.5,
+                       z2=1.0, phi_max=70, center=0, distance=1e5):
+    """
+
+    Parameters
+    ----------
+    x
+    norm : number
+        The electron density after the break (cm^-3).
+    a1
+    a2
+    phi_b
+    c
+    z1 : float
+        Inner radius of the sector (arcsec).
+    z2 : float
+        Outer radius of the sector (arcsec).
+    phi_max
+    center
+    distance : float
+        Distance (kpc).
+
+    Returns
+    -------
+
+    """
     x = x - center
 
-    result = integrate.quad(
-        _cone_sb, z1, z2,
-        args=(norm, x / 180 * np.pi, b / 180 * np.pi,
-              c, a1, a2, az, theta_max))[0] * 2 / (z2 ** 2 - z1 ** 2)
+    z1 = z1 / 3600 / 180 * np.pi * distance * 3.09e21
+    z2 = z2 / 3600 / 180 * np.pi * distance * 3.09e21
+
+    em = integrate.quad(_cone_sb, z1, z2,
+                        args=(norm, x / 180 * np.pi, phi_b / 180 * np.pi,
+                              c, a1, a2, phi_max))[0]
+    result = em * (z1 + z2) / (z2 ** 2 - z1 ** 2)
+    result *= 3.5e-15 / (4 * np.pi) * 8.46e-8
+
     return result
 
 
 @njit
-def _cone_n_sq(l, n0, z, phi, b, a, az):
+def _cone_n_sq(l, n0, z, phi, b, a):
     rho = np.sqrt(z ** 2 + l ** 2)
     phi0 = np.arccos(z * np.cos(phi) / np.sqrt(z ** 2 + l ** 2))
-    return (n0 * (phi0 / b) ** (-a) * rho ** (-az)) ** 2
+    return (n0 * (phi0 / b) ** (-a)) ** 2
 
 
-def _cone_sb(z, n0, phi, b, c, a1, a2, az, theta_max):
+def _cone_sb(z, n0, theta, b, c, a1, a2, phi_max):
     """
 
     Parameters
     ----------
     z : number
     n0 : number
-    phi : number
+    theta : number
     b : number
     c : number
     a1 : number
     a2 : number
     az : number
-    theta_max : number
+    phi_max : number
 
     Returns
     -------
 
     """
-    phi = np.abs(phi)
+    theta = np.abs(theta)
 
     out_bound = z * np.sqrt(
-        1 - (np.cos(theta_max / 180 * np.pi) / np.cos(phi)) ** 2)
-    if phi > b:
-        result = 2 * integrate.quad(_cone_n_sq, 1e-7, out_bound,
-                                    args=(n0, z, phi, b, a2, az),
+        1 - (np.cos(phi_max / 180 * np.pi) / np.cos(theta)) ** 2)
+    if theta >= b:
+        result = 2 * integrate.quad(_cone_n_sq, 0, out_bound,
+                                    args=(n0, z, theta, b, a2),
                                     )[0]
     else:
-        l_b = z * np.sqrt(np.cos(phi) ** 2 / np.cos(b) ** 2 - 1)
-        result = 2 * z * \
-                 (c ** 2 * integrate.quad(_cone_n_sq, 1e-7, l_b,
-                                          args=(n0, z, phi, b, a1, az))[0] +
-                  integrate.quad(_cone_n_sq, l_b, out_bound,
-                                 args=(n0, z, phi, b, a2, az))[0])
+        l_b = z * np.sqrt(np.cos(theta) ** 2 / np.cos(b) ** 2 - 1)
+        result = 2 * (
+                integrate.quad(_cone_n_sq, 0, l_b,
+                               args=(n0, z, theta, b, a1))[0] +
+                integrate.quad(_cone_n_sq, l_b, out_bound,
+                               args=(n0 / c, z, theta, b, a2))[0])
 
     return result
