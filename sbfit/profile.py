@@ -23,7 +23,6 @@ import corner
 from . import utils
 from .statistics import cstat
 from .model import BasicModel
-from .utils import King
 
 __all__ = ["Profile"]
 
@@ -49,12 +48,12 @@ class Profile(object):
         "y": azimuthal profile with x-axis unit of degree.
     """
 
-    def __init__(self, raw_data: Table, channel_width=1,
+    def __init__(self, raw_data: Table, channel_width=1, channel_start=0,
                  pixel_scale=0.01, exposure_unit=u.s, profile_axis="x"):
         self._profile_axis = profile_axis
         self._pixel_area = pixel_scale ** 2 * 3600  # arcmin^2 / pixel
         self._channel_width = channel_width
-        self._channel_grid = np.arange(0, np.max(raw_data["r"]) +
+        self._channel_grid = np.arange(channel_start, np.max(raw_data["r"]) +
                                        channel_width, channel_width)
         self._channel_center = self._channel_grid[:-1] + 0.5
         self._smooth_matrix = np.mat(
@@ -65,7 +64,7 @@ class Profile(object):
         self._binned_profile = None
         self._model = None
         self._mcmc_sampler = None
-        self._flat_samples = None
+        self._mcmc_flat_samples = None
         self._error = collections.OrderedDict()
         self._show_stat = False
         self._min_stat = None
@@ -106,6 +105,10 @@ class Profile(object):
     def binned_profile(self):
         """The binned surface brightness profile."""
         return self._binned_profile
+
+    @property
+    def mcmc_flat_samples(self):
+        return self._mcmc_flat_samples
 
     @staticmethod
     def _create_channel(raw_data, bin_grid):
@@ -399,8 +402,8 @@ class Profile(object):
                 psf_kernel = Gaussian1DKernel(sigma / self._channel_width)
                 self._smooth_fwhm = 2.355 * sigma / self._channel_width
             elif kernel_type == "king":
-                psf_model = King(rc=king_rc / self._channel_width,
-                                 alpha=king_alpha)
+                psf_model = utils.King(rc=king_rc / self._channel_width,
+                                       alpha=king_alpha)
                 psf_kernel = Model1DKernel(
                     psf_model,
                     x_size=(8 * king_rc / self._channel_width) // 2 * 2 + 1)
@@ -440,6 +443,11 @@ class Profile(object):
         scale : {"loglog", "semilogx", "semilogy", "linear"}, optional
             The X-Y axis scale of the profile plot.
             The default scale = "loglog".
+        xlim : tuple, optional
+            The X-axis limits of the profile.
+        ylim : tuple, optional
+            The Y-axis limits of the profile.
+
 
         """
         if plot_type == "profile":
@@ -531,11 +539,11 @@ class Profile(object):
 
             # limits
             if xlim is not None:
-                ax_profile.set_xlim(xlim)
+                ax_profile.set_xlim(*xlim)
             else:
                 pass
             if ylim is not None:
-                ax_profile.set_ylim(ylim)
+                ax_profile.set_ylim(*ylim)
             else:
                 pass
 
@@ -585,7 +593,11 @@ class Profile(object):
             else:
                 pnames_free, pvalues_free = utils.get_free_parameter(
                     self.model)
-                fig = corner.corner(self._flat_samples, labels=pnames_free)
+                fig = corner.corner(self._mcmc_flat_samples,
+                                    smooth=1, smooth1d=1,
+                                    bins=self._mcmc_flat_samples.shape[0] / 32,
+                                    truths=pvalues_free,
+                                    labels=pnames_free)
                 plt.close(fig)
 
     def fit(self, show_step=False, show_result=True, record_fit=True,
@@ -882,12 +894,15 @@ class Profile(object):
 
         # output error
         flat_samples = sampler.get_chain(discard=burnin, flat=True)
-        self._flat_samples = flat_samples
+        self._mcmc_flat_samples = flat_samples
         self._error = collections.OrderedDict()
-        for i in range(pnames_free):
-            left, mid, right = np.percentile(flat_samples[:, i], [16, 50, 84])
-            self._error.update({pnames_free[i]: (right - mid, mid - left)})
-            self.model.__setattr__(pnames_free[i], mid)
+        for i in range(len(pnames_free)):
+            # left, mid, right = np.percentile(flat_samples[:, i], [16, 50, 84])
+            mode, up_error, low_error = \
+                utils.get_uncertainty(flat_samples[:, i])
+
+            self._error.update({pnames_free[i]: (up_error, low_error)})
+            self.model.__setattr__(pnames_free[i], mode)
 
     def _mcmc_log_probability(self, theta):
         pnames_free, _ = utils.get_free_parameter(self.model)
@@ -900,3 +915,27 @@ class Profile(object):
             return -0.5 * self.calculate(update=False)
         else:
             return -np.inf
+
+    def update_mcmc_flat_sample(self, burnin):
+        """
+        Update the flat MCMC sample with a new burn-in steps value.
+
+        Parameters
+        ----------
+        burnin : int
+            The number of steps at the beginning of the chain, which should be
+            discarded when estimating the errors.
+
+        """
+        if self._mcmc_sampler is None:
+            warnings.warn("No sampler found, please run mcmc_error first.")
+        elif self._mcmc_sampler.iteration <= burnin:
+            warnings.warn("Steps of burn-in should be smaller than the number"
+                          "of iterations.")
+        else:
+            self._mcmc_flat_samples = \
+                self._mcmc_sampler.get_chain(discard=burnin, flat=True)
+
+
+
+
