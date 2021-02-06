@@ -245,9 +245,9 @@ def _cone_sb(z, n0, theta, b, c, a1, a2, phi_max):
 
     out_bound = z * np.sqrt(
         1 - (np.cos(phi_max / 180 * np.pi) / np.cos(theta)) ** 2)
-    if theta >= b:
+    if theta > b:
         result = 2 * integrate.quad(_cone_n_sq, 0, out_bound,
-                                    args=(n0, z, theta, b, a2),
+                                    args=(n0 / c, z, theta, b, a2),
                                     )[0]
     else:
         l_b = z * np.sqrt(np.cos(theta) ** 2 / np.cos(b) ** 2 - 1)
