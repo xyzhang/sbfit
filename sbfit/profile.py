@@ -94,7 +94,7 @@ class Profile(object):
     @property
     def error(self):
         """The error estimated by the MCMC method."""
-        return self.error
+        return self._error
 
     @property
     def error_approx(self):
@@ -579,7 +579,7 @@ class Profile(object):
                 labels, _ = utils.get_free_parameter(self.model)
                 for i in range(samples.shape[2]):
                     ax_profile = axes[i]
-                    ax_profile.plot(samples[:, :, i], "k", alpha=0.3)
+                    ax_profile.plot(samples[:, :, i], alpha=0.2)
                     ax_profile.set_xlim(0, len(samples))
                     ax_profile.set_ylabel(labels[i])
                     ax_profile.yaxis.set_label_coords(-0.1, 0.5)
@@ -595,9 +595,11 @@ class Profile(object):
                     self.model)
                 fig = corner.corner(self._mcmc_flat_samples,
                                     smooth=1, smooth1d=1,
-                                    bins=self._mcmc_flat_samples.shape[0] / 32,
+                                    bins=self._mcmc_flat_samples.shape[
+                                             0] / 2000,
                                     truths=pvalues_free,
                                     labels=pnames_free)
+                plt.show()
                 plt.close(fig)
 
     def fit(self, show_step=False, show_result=True, record_fit=True,
@@ -886,8 +888,9 @@ class Profile(object):
         pos = np.array(pvalues_free) + 1e-4 * np.random.randn(nwalkers, len(
             pvalues_free)) * np.array(pvalues_free)
         sampler = emcee.EnsembleSampler(nwalkers, len(pvalues_free),
-                                        self._mcmc_log_probability, )
-        sampler.run_mcmc(pos, nsteps, progress=True)
+                                        self._mcmc_log_probability)
+        sampler.run_mcmc(pos, nsteps, progress=True,
+                         skip_initial_state_check=True)
 
         # store sampler
         self._mcmc_sampler = sampler
@@ -896,6 +899,9 @@ class Profile(object):
         flat_samples = sampler.get_chain(discard=burnin, flat=True)
         self._mcmc_flat_samples = flat_samples
         self._error = collections.OrderedDict()
+
+        dof = len(self._binned_profile) - len(pnames_free)
+
         for i in range(len(pnames_free)):
             # left, mid, right = np.percentile(flat_samples[:, i], [16, 50, 84])
             mode, up_error, low_error = \
@@ -903,6 +909,17 @@ class Profile(object):
 
             self._error.update({pnames_free[i]: (up_error, low_error)})
             self.model.__setattr__(pnames_free[i], mode)
+
+        # print fit result
+        stat = self.calculate(update=True)
+        print(f"Degree of freedom: {dof:d}; C-stat: {stat:.4f}")
+
+        pnames_free, pvalues_free = utils.get_free_parameter(self.model)
+
+        [print(f"{pnames_free[i]}:\t{pvalues_free[i]}\t"
+               f"+{self._error[pnames_free[i]][0]:.3e}\t"
+               f"-{self._error[pnames_free[i]][1]:.3e}") for i in
+         range(len(pnames_free))]
 
     def _mcmc_log_probability(self, theta):
         pnames_free, _ = utils.get_free_parameter(self.model)
@@ -935,7 +952,3 @@ class Profile(object):
         else:
             self._mcmc_flat_samples = \
                 self._mcmc_sampler.get_chain(discard=burnin, flat=True)
-
-
-
-
