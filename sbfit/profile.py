@@ -903,12 +903,13 @@ class Profile(object):
         dof = len(self._binned_profile) - len(pnames_free)
 
         for i in range(len(pnames_free)):
-            # left, mid, right = np.percentile(flat_samples[:, i], [16, 50, 84])
-            mode, up_error, low_error = \
-                utils.get_uncertainty(flat_samples[:, i])
+            # here the previously best-fit results are still regarded as modes.
+            _, up_error, low_error = \
+                utils.get_uncertainty(flat_samples[:, i],
+                                      centroid=pvalues_free[i])
 
             self._error.update({pnames_free[i]: (up_error, low_error)})
-            self.model.__setattr__(pnames_free[i], mode)
+            # self.model.__setattr__(pnames_free[i], mode)
 
         # print fit result
         stat = self.calculate(update=True)
