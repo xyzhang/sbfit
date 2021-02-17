@@ -74,32 +74,43 @@ class King(Fittable1DModel):
         return amplitude * (1 + (x - r0) ** 2 / rc ** 2) ** -alpha
 
 
-def get_uncertainty(sample):
+def get_uncertainty(sample, nbins=None, centroid=None):
     """
     Calculate the mode and 1sigma uncertainties for a given discrete sample.
 
     Parameters
     ----------
     sample : Array
+    nbins : int
+        Number of histogram bins. Default = None.
+    centroid : number
+        The given mode. Default = None.
 
     Returns
     -------
+    mode : float
+    up_error : float
+    low_error : float
 
     """
 
-    bin_width = np.diff(np.percentile(sample, [16, 84]))[0] / 10
-    bin_number = int((np.max(sample) - np.min(sample)) / bin_width)
+    if nbins is None:
+        bin_width = np.diff(np.percentile(sample, [16, 84]))[0] / 10
+        bin_number = int((np.max(sample) - np.min(sample)) / bin_width)
+        bin_number = int(len(sample) / 100)
+    else:
+        bin_number = nbins
+
     norm, grid = np.histogram(sample, bins=bin_number)
     grid_center = 0.5 * (grid[:-1] + grid[1:])
-    print(grid)
 
     mode_index = np.argmax(norm)
     mode_norm = norm[mode_index]
     mode = grid_center[mode_index]
 
     def frac(height, norm_list, show_index=False):
-        low_index = np.where(norm_list > height)[0][0] - 1
-        up_index = np.where(norm_list > height)[0][-1] + 1
+        low_index = np.where(norm_list > height)[0][0]
+        up_index = np.where(norm_list > height)[0][-1]
         out_fraction = (np.sum(norm_list[:low_index]) + np.sum(
             norm_list[up_index:])) / np.sum(norm_list)
         if show_index:
@@ -112,6 +123,11 @@ def get_uncertainty(sample):
         i += 1
     else:
         _, low, up = frac(mode_norm - i, norm, show_index=True)
+
+    if centroid is None:
+        pass
+    else:
+        mode = centroid
 
     low_error = mode - grid_center[low]
     up_error = grid_center[up] - mode
