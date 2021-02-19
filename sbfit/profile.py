@@ -884,6 +884,9 @@ class Profile(object):
         emcee: https://emcee.readthedocs.io/en/stable/
 
         """
+        # a backup of the model.
+        model_backup = copy.deepcopy(self.model)
+
         pnames_free, pvalues_free = utils.get_free_parameter(self.model)
         pos = np.array(pvalues_free) + 1e-4 * np.random.randn(nwalkers, len(
             pvalues_free)) * np.array(pvalues_free)
@@ -904,16 +907,19 @@ class Profile(object):
 
         for i in range(len(pnames_free)):
             # here the previously best-fit results are still regarded as modes.
-            _, up_error, low_error = \
+            mode, up_error, low_error = \
                 utils.get_uncertainty(flat_samples[:, i],
-                                      centroid=pvalues_free[i])
+                                      # centroid=pvalues_free[i],
+                                      )
 
             self._error.update({pnames_free[i]: (up_error, low_error)})
-            # self.model.__setattr__(pnames_free[i], mode)
+            self.model.__setattr__(pnames_free[i], mode)
+
+        # self.set_model(model_backup)
 
         # print fit result
-        stat = self.calculate(update=True)
-        print(f"Degree of freedom: {dof:d}; C-stat: {stat:.4f}")
+        # stat = self.calculate(update=True)
+        # print(f"Degree of freedom: {dof:d}; C-stat: {stat:.4f}")
 
         pnames_free, pvalues_free = utils.get_free_parameter(self.model)
 
