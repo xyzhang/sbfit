@@ -417,8 +417,8 @@ class Profile(object):
                     raise TypeError("The custom_kernle must be a "
                                     "Kernel object")
             else:
-                raise ValueError("The kernel_type must be in {'Gaussian', "
-                                 "'King', 'custom'}.")
+                raise ValueError("The kernel_type must be in {'gaussian', "
+                                 "'king', 'custom'}.")
 
             # create convolve matrix from the 2D array
             for i in range(n_channel):
@@ -886,6 +886,7 @@ class Profile(object):
         """
         # a backup of the model.
         model_backup = copy.deepcopy(self.model)
+        stat = self.calculate(update=True)
 
         pnames_free, pvalues_free = utils.get_free_parameter(self.model)
         pos = np.array(pvalues_free) + 1e-4 * np.random.randn(nwalkers, len(
@@ -905,21 +906,26 @@ class Profile(object):
 
         dof = len(self._binned_profile) - len(pnames_free)
 
+        # try using the mode from the mcmc sample
         for i in range(len(pnames_free)):
-            # here the previously best-fit results are still regarded as modes.
-            mode, up_error, low_error = \
-                utils.get_uncertainty(flat_samples[:, i],
-                                      # centroid=pvalues_free[i],
-                                      )
-
-            self._error.update({pnames_free[i]: (up_error, low_error)})
+            mode, _, _ = utils.get_uncertainty(flat_samples[:, i])
             self.model.__setattr__(pnames_free[i], mode)
 
-        # self.set_model(model_backup)
+        new_stat = self.calculate(update=False)
+        if new_stat > stat:
+            self.set_model(model_backup)
+        else:
+            stat = new_stat
+
+        for i in range(len(pnames_free)):
+            _, up_error, low_error = \
+                utils.get_uncertainty(flat_samples[:, i],
+                    centroid=self.model.__getattribute__(pnames_free[i]),
+                                      )
+            self._error.update({pnames_free[i]: (up_error, low_error)})
 
         # print fit result
-        # stat = self.calculate(update=True)
-        # print(f"Degree of freedom: {dof:d}; C-stat: {stat:.4f}")
+        print(f"Degree of freedom: {dof:d}; C-stat: {stat:.4f}")
 
         pnames_free, pvalues_free = utils.get_free_parameter(self.model)
 
