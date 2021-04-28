@@ -266,7 +266,8 @@ class ObservationList(object):
                                                      axis=profile_axis)
 
             pixel_scale = get_pixel_scale(obs.cts_image.header) * 3600 # arcsec
-            profile_x *= pixel_scale
+            if profile_axis == "x":
+                profile_x *= pixel_scale
 
             valid_mask = np.logical_and(valid_mask, image_grid > 0)
 

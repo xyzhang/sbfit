@@ -206,10 +206,12 @@ def ConeDoublePowerLaw(x, norm=1, a1=0, a2=1.0, phi_b=10., c=2.0, z1=0.5,
     z1 = z1 / 3600 / 180 * np.pi * distance * 3.09e21
     z2 = z2 / 3600 / 180 * np.pi * distance * 3.09e21
 
-    em = integrate.quad(_cone_sb, z1, z2,
+    # em = integrate.quad(_cone_sb, z1, z2,
+    em = integrate.quad(_r_cone_sb, z1, z2,
                         args=(norm, x / 180 * np.pi, phi_b / 180 * np.pi,
                               c, a1, a2, phi_max))[0]
-    result = em * (z1 + z2) / (z2 ** 2 - z1 ** 2)
+    # result = em * (z1 + z2) / (z2 ** 2 - z1 ** 2)
+    result = em * 2 / (z2 ** 2 - z1 ** 2)
     result *= 3.5e-15 / (4 * np.pi) * 8.46e-8
 
     return result
@@ -257,4 +259,9 @@ def _cone_sb(z, n0, theta, b, c, a1, a2, phi_max):
                 integrate.quad(_cone_n_sq, l_b, out_bound,
                                args=(n0 / c, z, theta, b, a2))[0])
 
+    return result
+
+
+def _r_cone_sb(z, n0, theta, b, c, a1, a2, phi_max):
+    result = z * _cone_sb(z, n0, theta, b, c, a1, a2, phi_max)
     return result
