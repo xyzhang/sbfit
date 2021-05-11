@@ -94,6 +94,9 @@ def get_uncertainty(sample, nbins=None, centroid=None):
 
     """
 
+    # clip Nan values
+    sample = sample[np.logical_not(np.isnan(sample))]
+
     if nbins is None:
         bin_width = np.diff(np.percentile(sample, [16, 84]))[0] / 10
         bin_number = int((np.max(sample) - np.min(sample)) / bin_width)
