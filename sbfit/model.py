@@ -8,10 +8,14 @@ import numpy as np
 from scipy import integrate
 from astropy.modeling import Model, Parameter
 from astropy.modeling.utils import get_inputs_and_params
+from astropy.cosmology import FlatLambdaCDM
+from astropy import units
 from numba import njit
 
 __all__ = ["custom_model", "Constant", "Gaussian", "DoublePowerLaw", "Beta",
            "ConeDoublePowerLaw"]
+
+cosmos = FlatLambdaCDM(H0=70, Om0=0.3, Tcmb0=2.7)
 
 
 class BasicModel(Model):
@@ -176,7 +180,7 @@ def Beta(x, norm=1., beta=1., r=1.):
 
 @custom_model
 def ConeDoublePowerLaw(x, norm=1, a1=0, a2=1.0, phi_b=10., c=2.0, z1=0.5,
-                       z2=1.0, phi_max=70, center=0, distance=1e5):
+                       z2=1.0, phi_max=70, center=0, redshift=0.1):
     """
 
     Parameters
@@ -194,14 +198,16 @@ def ConeDoublePowerLaw(x, norm=1, a1=0, a2=1.0, phi_b=10., c=2.0, z1=0.5,
         Outer radius of the sector (arcsec).
     phi_max
     center
-    distance : float
-        Distance (kpc).
+    redshift: float
+        redshift.
 
     Returns
     -------
 
     """
     x = x - center
+
+    distance = cosmos.luminosity_distance(redshift).to(units.kpc).value
 
     z1 = z1 / 3600 / 180 * np.pi * distance * 3.09e21
     z2 = z2 / 3600 / 180 * np.pi * distance * 3.09e21
@@ -212,7 +218,9 @@ def ConeDoublePowerLaw(x, norm=1, a1=0, a2=1.0, phi_b=10., c=2.0, z1=0.5,
                               c, a1, a2, phi_max))[0]
     # result = em * (z1 + z2) / (z2 ** 2 - z1 ** 2)
     result = em * 2 / (z2 ** 2 - z1 ** 2)
-    result *= 3.5e-15 / (4 * np.pi) * 8.46e-8
+    cf = 4e-15  # (ph s^-1 cm^3) 0.5-2.0 keV cooling function of a 5 keV plasma
+    sq_arcsec_per_sq_radian = 8.46e-8
+    result *= cf / (4 * np.pi) / (1 + redshift) ** 4 * sq_arcsec_per_sq_radian
 
     return result
 
