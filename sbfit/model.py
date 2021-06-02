@@ -179,8 +179,8 @@ def Beta(x, norm=1., beta=1., r=1.):
 
 
 @custom_model
-def ConeDoublePowerLaw(x, norm=1, a1=0, a2=1.0, phi_b=10., c=2.0, z1=0.5,
-                       z2=1.0, phi_max=70, center=0, redshift=0.1):
+def ConeDoublePowerLaw(x, norm=1, a1=0, a2=1.0, phi_b=10., c=2.0, r1=0.5,
+                       r2=1.0, phi_max=70, center=0, redshift=0.1):
     """
 
     Parameters
@@ -192,9 +192,9 @@ def ConeDoublePowerLaw(x, norm=1, a1=0, a2=1.0, phi_b=10., c=2.0, z1=0.5,
     a2
     phi_b
     c
-    z1 : float
+    r1 : float
         Inner radius of the sector (arcsec).
-    z2 : float
+    r2 : float
         Outer radius of the sector (arcsec).
     phi_max
     center
@@ -209,15 +209,15 @@ def ConeDoublePowerLaw(x, norm=1, a1=0, a2=1.0, phi_b=10., c=2.0, z1=0.5,
 
     distance = cosmos.luminosity_distance(redshift).to(units.kpc).value
 
-    z1 = z1 / 3600 / 180 * np.pi * distance * 3.09e21
-    z2 = z2 / 3600 / 180 * np.pi * distance * 3.09e21
+    r1 = r1 / 3600 / 180 * np.pi * distance * 3.09e21
+    r2 = r2 / 3600 / 180 * np.pi * distance * 3.09e21
 
-    # em = integrate.quad(_cone_sb, z1, z2,
-    em = integrate.quad(_r_cone_sb, z1, z2,
+    # em = integrate.quad(_cone_sb, r1, r2,
+    em = integrate.quad(_r_cone_sb, r1, r2,
                         args=(norm, x / 180 * np.pi, phi_b / 180 * np.pi,
                               c, a1, a2, phi_max))[0]
-    # result = em * (z1 + z2) / (z2 ** 2 - z1 ** 2)
-    result = em * 2 / (z2 ** 2 - z1 ** 2)
+    # result = em * (r1 + r2) / (r2 ** 2 - r1 ** 2)
+    result = em * 2 / (r2 ** 2 - r1 ** 2)
     cf = 4e-15  # (ph s^-1 cm^3) 0.5-2.0 keV cooling function of a 5 keV plasma
     sq_arcsec_per_sq_radian = 8.46e-8
     result *= cf / (4 * np.pi) / (1 + redshift) ** 4 * sq_arcsec_per_sq_radian
