@@ -1,0 +1,410 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>sbfit.utils &mdash; sbfit  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["\\(", "\\)"]], "displayMath": [["\\[", "\\]"]], "processRefs": false, "processEnvironments": false}})</script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> sbfit
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../guide/installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../guide/installation.html#from-source">From source</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../guide/preparation.html">File preparation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../guide/preparation/image.html">Images</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../guide/preparation/image.html#image-types">Image types</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../guide/preparation/image.html#count-map">Count map</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../guide/preparation/image.html#exposure-map">Exposure map</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../guide/preparation/image.html#instrumental-background-map">Instrumental background map</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../guide/preparation/image.html#multiple-instruments-observations">Multiple instruments/observations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../guide/preparation/image.html#energy-range">Energy range</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../guide/preparation/region.html">Regions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../guide/preparation/region.html#region-format">Region format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../guide/preparation/region.html#inclusive-regions">Inclusive regions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../guide/preparation/region.html#exclusive-regions">Exclusive regions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../guide/usage.html">Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../guide/usage.html#load-data-and-extract-profiles">Load data and extract profiles</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../guide/usage.html#load-images">Load images</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../guide/usage.html#load-regions">Load regions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../guide/usage.html#extract-profiles">Extract profiles</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../guide/usage.html#model-fitting-and-visualization">Model fitting and visualization</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../guide/usage.html#rebin">Rebin</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../guide/usage.html#display-a-profile">Display a profile</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../guide/usage.html#model-fitting">Model fitting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../guide/usage.html#uncertainty-estimation-using-mcmc">Uncertainty estimation using MCMC</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../guide/usage.html#output-profiles">Output profiles</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../guide/model.html">Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../guide/concept.html">Basic Concepts</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../guide/concept/profile.html">Profiles</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../guide/concept/profile.html#channel-and-bin">Channel and bin</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../guide/concept/profile.html#profile-types">Profile types</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../guide/concept/profile.html#binning-methods">Binning methods</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../guide/concept/psf.html">PSF matrix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../guide/concept/fit.html">Model fitting</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../sbfit.html">Reference/API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../sbfit.html#module-sbfit.image">sbfit.image</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../sbfit.html#module-sbfit.model">sbfit.model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../sbfit.html#module-sbfit.observation">sbfit.observation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../sbfit.html#module-sbfit.profile">sbfit.profile</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../sbfit.html#module-sbfit.region">sbfit.region</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../sbfit.html#module-sbfit.statistics">sbfit.statistics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../sbfit.html#module-sbfit.utils">sbfit.utils</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../acknowledgement.html">Acknowledgement</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../example.html">Examples</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">sbfit</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>sbfit.utils</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for sbfit.utils</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">optimize</span>
+<span class="kn">from</span> <span class="nn">astropy.io</span> <span class="kn">import</span> <span class="n">fits</span>
+<span class="kn">from</span> <span class="nn">astropy.modeling</span> <span class="kn">import</span> <span class="n">Model</span><span class="p">,</span> <span class="n">Fittable1DModel</span><span class="p">,</span> <span class="n">Parameter</span>
+<span class="kn">from</span> <span class="nn">astropy.wcs</span> <span class="kn">import</span> <span class="n">WCS</span>
+<span class="kn">from</span> <span class="nn">astropy.coordinates</span> <span class="kn">import</span> <span class="n">SkyCoord</span>
+
+
+<div class="viewcode-block" id="load_image"><a class="viewcode-back" href="../../sbfit.html#sbfit.utils.load_image">[docs]</a><span class="k">def</span> <span class="nf">load_image</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">extension</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Read FITS image</span>
+<span class="sd">    The default extension = 0 is the primary HDU.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">hdu</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="n">header</span> <span class="o">=</span> <span class="n">hdu</span><span class="p">[</span><span class="n">extension</span><span class="p">]</span><span class="o">.</span><span class="n">header</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">hdu</span><span class="p">[</span><span class="n">extension</span><span class="p">]</span><span class="o">.</span><span class="n">data</span> <span class="o">*</span> <span class="mf">1.</span>  <span class="c1"># Convert to float type.</span>
+    <span class="n">hdu</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">header</span><span class="p">,</span> <span class="n">data</span></div>
+
+
+<div class="viewcode-block" id="sky_to_pixel"><a class="viewcode-back" href="../../sbfit.html#sbfit.utils.sky_to_pixel">[docs]</a><span class="k">def</span> <span class="nf">sky_to_pixel</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;deg&quot;</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="s2">&quot;icrs&quot;</span><span class="p">):</span>
+    <span class="n">wcs</span> <span class="o">=</span> <span class="n">WCS</span><span class="p">(</span><span class="n">header</span><span class="p">)</span>
+    <span class="n">coord</span> <span class="o">=</span> <span class="n">SkyCoord</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="n">unit</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="n">frame</span><span class="p">)</span>
+    <span class="n">x_pix</span><span class="p">,</span> <span class="n">y_pix</span> <span class="o">=</span> <span class="n">wcs</span><span class="o">.</span><span class="n">world_to_pixel</span><span class="p">(</span><span class="n">coord</span><span class="p">)</span>
+    <span class="n">x_pix</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">x_pix</span><span class="p">)</span>
+    <span class="n">y_pix</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">y_pix</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">x_pix</span><span class="p">,</span> <span class="n">y_pix</span></div>
+
+
+<div class="viewcode-block" id="get_free_parameter"><a class="viewcode-back" href="../../sbfit.html#sbfit.utils.get_free_parameter">[docs]</a><span class="k">def</span> <span class="nf">get_free_parameter</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">Model</span><span class="p">):</span>
+    <span class="n">pnames_free</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">param_names</span><span class="p">)</span>
+    <span class="n">pvalues_free</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span>
+    <span class="n">pfixed</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fixed</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">pfixed</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">pfixed</span><span class="p">[</span><span class="n">key</span><span class="p">]:</span>
+            <span class="n">keyindex</span> <span class="o">=</span> <span class="n">pnames_free</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+            <span class="n">pnames_free</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">keyindex</span><span class="p">)</span>
+            <span class="n">pvalues_free</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">keyindex</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">pnames_free</span><span class="p">,</span> <span class="n">pvalues_free</span></div>
+
+
+<div class="viewcode-block" id="get_pixel_scale"><a class="viewcode-back" href="../../sbfit.html#sbfit.utils.get_pixel_scale">[docs]</a><span class="k">def</span> <span class="nf">get_pixel_scale</span><span class="p">(</span><span class="n">header</span><span class="p">):</span>
+    <span class="n">wcs</span> <span class="o">=</span> <span class="n">WCS</span><span class="p">(</span><span class="n">header</span><span class="p">)</span>
+    <span class="n">pixel_scale</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">wcs</span><span class="o">.</span><span class="n">pixel_scale_matrix</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">pixel_scale</span></div>
+
+
+<div class="viewcode-block" id="get_parameter_bounds"><a class="viewcode-back" href="../../sbfit.html#sbfit.utils.get_parameter_bounds">[docs]</a><span class="k">def</span> <span class="nf">get_parameter_bounds</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">Model</span><span class="p">,</span> <span class="n">param_names</span><span class="p">):</span>
+    <span class="n">low_bounds</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">up_bounds</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">param_names</span><span class="p">:</span>
+        <span class="n">item_bounds</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="n">item</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">item_bounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">low_bounds</span> <span class="o">+=</span> <span class="p">[</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">low_bounds</span> <span class="o">+=</span> <span class="p">[</span><span class="n">item_bounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+        <span class="k">if</span> <span class="n">item_bounds</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">up_bounds</span> <span class="o">+=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">up_bounds</span> <span class="o">+=</span> <span class="p">[</span><span class="n">item_bounds</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">low_bounds</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">up_bounds</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="King"><a class="viewcode-back" href="../../sbfit.html#sbfit.utils.King">[docs]</a><span class="k">class</span> <span class="nc">King</span><span class="p">(</span><span class="n">Fittable1DModel</span><span class="p">):</span>
+    <span class="n">n_inputs</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">n_outputs</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="n">amplitude</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">rc</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">r0</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">alpha</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span>
+
+<div class="viewcode-block" id="King.evaluate"><a class="viewcode-back" href="../../sbfit.html#sbfit.utils.King.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">amplitude</span><span class="p">,</span> <span class="n">rc</span><span class="p">,</span> <span class="n">r0</span><span class="p">,</span> <span class="n">alpha</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">amplitude</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">r0</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="n">rc</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="o">-</span><span class="n">alpha</span></div></div>
+
+
+<div class="viewcode-block" id="get_uncertainty"><a class="viewcode-back" href="../../sbfit.html#sbfit.utils.get_uncertainty">[docs]</a><span class="k">def</span> <span class="nf">get_uncertainty</span><span class="p">(</span><span class="n">sample</span><span class="p">,</span> <span class="n">nbins</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">centroid</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the mode and 1sigma uncertainties for a given discrete sample.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    sample : Array</span>
+<span class="sd">    nbins : int</span>
+<span class="sd">        Number of histogram bins. Default = None.</span>
+<span class="sd">    centroid : number</span>
+<span class="sd">        The given mode. Default = None.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    mode : float</span>
+<span class="sd">    up_error : float</span>
+<span class="sd">    low_error : float</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># clip Nan values</span>
+    <span class="n">sample</span> <span class="o">=</span> <span class="n">sample</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">sample</span><span class="p">))]</span>
+
+    <span class="k">if</span> <span class="n">nbins</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">bin_width</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">sample</span><span class="p">,</span> <span class="p">[</span><span class="mi">16</span><span class="p">,</span> <span class="mi">84</span><span class="p">]))[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">10</span>
+        <span class="n">bin_number</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">sample</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">sample</span><span class="p">))</span> <span class="o">/</span> <span class="n">bin_width</span><span class="p">)</span>
+        <span class="n">bin_number</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sample</span><span class="p">)</span> <span class="o">/</span> <span class="mi">100</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">bin_number</span> <span class="o">=</span> <span class="n">nbins</span>
+
+    <span class="n">norm</span><span class="p">,</span> <span class="n">grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">sample</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">bin_number</span><span class="p">)</span>
+    <span class="n">grid_center</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">grid</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">grid</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+    <span class="n">mode_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">norm</span><span class="p">)</span>
+    <span class="n">mode_norm</span> <span class="o">=</span> <span class="n">norm</span><span class="p">[</span><span class="n">mode_index</span><span class="p">]</span>
+    <span class="n">mode</span> <span class="o">=</span> <span class="n">grid_center</span><span class="p">[</span><span class="n">mode_index</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">frac</span><span class="p">(</span><span class="n">height</span><span class="p">,</span> <span class="n">norm_list</span><span class="p">,</span> <span class="n">show_index</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="n">low_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">norm_list</span> <span class="o">&gt;</span> <span class="n">height</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">up_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">norm_list</span> <span class="o">&gt;</span> <span class="n">height</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">out_fraction</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">norm_list</span><span class="p">[:</span><span class="n">low_index</span><span class="p">])</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+            <span class="n">norm_list</span><span class="p">[</span><span class="n">up_index</span><span class="p">:]))</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">norm_list</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">show_index</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">out_fraction</span><span class="p">,</span> <span class="n">low_index</span><span class="p">,</span> <span class="n">up_index</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">out_fraction</span>
+
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">while</span> <span class="n">frac</span><span class="p">(</span><span class="n">mode_norm</span> <span class="o">-</span> <span class="n">i</span><span class="p">,</span> <span class="n">norm</span><span class="p">)</span> <span class="o">&gt;</span> <span class="o">.</span><span class="mi">318</span><span class="p">:</span>
+        <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">low</span><span class="p">,</span> <span class="n">up</span> <span class="o">=</span> <span class="n">frac</span><span class="p">(</span><span class="n">mode_norm</span> <span class="o">-</span> <span class="n">i</span><span class="p">,</span> <span class="n">norm</span><span class="p">,</span> <span class="n">show_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">centroid</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">mode</span> <span class="o">=</span> <span class="n">centroid</span>
+
+    <span class="n">low_error</span> <span class="o">=</span> <span class="n">mode</span> <span class="o">-</span> <span class="n">grid_center</span><span class="p">[</span><span class="n">low</span><span class="p">]</span>
+    <span class="n">up_error</span> <span class="o">=</span> <span class="n">grid_center</span><span class="p">[</span><span class="n">up</span><span class="p">]</span> <span class="o">-</span> <span class="n">mode</span>
+
+    <span class="k">return</span> <span class="n">mode</span><span class="p">,</span> <span class="n">up_error</span><span class="p">,</span> <span class="n">low_error</span></div>
+
+
+
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2019-2021, Xiaoyuan Zhang.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

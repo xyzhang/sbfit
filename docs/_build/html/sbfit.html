@@ -1,0 +1,1177 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Reference/API &mdash; sbfit  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["\\(", "\\)"]], "displayMath": [["\\[", "\\]"]], "processRefs": false, "processEnvironments": false}})</script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Acknowledgement" href="acknowledgement.html" />
+    <link rel="prev" title="Model fitting" href="guide/concept/fit.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> sbfit
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="guide/installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="guide/installation.html#from-source">From source</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="guide/preparation.html">File preparation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="guide/preparation/image.html">Images</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="guide/preparation/image.html#image-types">Image types</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="guide/preparation/image.html#count-map">Count map</a></li>
+<li class="toctree-l4"><a class="reference internal" href="guide/preparation/image.html#exposure-map">Exposure map</a></li>
+<li class="toctree-l4"><a class="reference internal" href="guide/preparation/image.html#instrumental-background-map">Instrumental background map</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="guide/preparation/image.html#multiple-instruments-observations">Multiple instruments/observations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="guide/preparation/image.html#energy-range">Energy range</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="guide/preparation/region.html">Regions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="guide/preparation/region.html#region-format">Region format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="guide/preparation/region.html#inclusive-regions">Inclusive regions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="guide/preparation/region.html#exclusive-regions">Exclusive regions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="guide/usage.html">Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="guide/usage.html#load-data-and-extract-profiles">Load data and extract profiles</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="guide/usage.html#load-images">Load images</a></li>
+<li class="toctree-l3"><a class="reference internal" href="guide/usage.html#load-regions">Load regions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="guide/usage.html#extract-profiles">Extract profiles</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="guide/usage.html#model-fitting-and-visualization">Model fitting and visualization</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="guide/usage.html#rebin">Rebin</a></li>
+<li class="toctree-l3"><a class="reference internal" href="guide/usage.html#display-a-profile">Display a profile</a></li>
+<li class="toctree-l3"><a class="reference internal" href="guide/usage.html#model-fitting">Model fitting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="guide/usage.html#uncertainty-estimation-using-mcmc">Uncertainty estimation using MCMC</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="guide/usage.html#output-profiles">Output profiles</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="guide/model.html">Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guide/concept.html">Basic Concepts</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="guide/concept/profile.html">Profiles</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="guide/concept/profile.html#channel-and-bin">Channel and bin</a></li>
+<li class="toctree-l3"><a class="reference internal" href="guide/concept/profile.html#profile-types">Profile types</a></li>
+<li class="toctree-l3"><a class="reference internal" href="guide/concept/profile.html#binning-methods">Binning methods</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="guide/concept/psf.html">PSF matrix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/concept/fit.html">Model fitting</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Reference/API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-sbfit.image">sbfit.image</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-sbfit.model">sbfit.model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-sbfit.observation">sbfit.observation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-sbfit.profile">sbfit.profile</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-sbfit.region">sbfit.region</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-sbfit.statistics">sbfit.statistics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-sbfit.utils">sbfit.utils</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="acknowledgement.html">Acknowledgement</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Examples</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">sbfit</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Reference/API</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/sbfit.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="reference-api">
+<h1>Reference/API<a class="headerlink" href="#reference-api" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-sbfit.image">
+<span id="sbfit-image"></span><h2>sbfit.image<a class="headerlink" href="#module-sbfit.image" title="Permalink to this headline">¶</a></h2>
+<p>This module defines classes of images that read from FITS files.</p>
+<dl class="py class">
+<dt id="sbfit.image.BkgImage">
+<em class="property">class </em><code class="sig-prename descclassname">sbfit.image.</code><code class="sig-name descname">BkgImage</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">image</span></em>, <em class="sig-param"><span class="n">norm_keyword</span><span class="o">=</span><span class="default_value">'bkgnorm'</span></em>, <em class="sig-param"><span class="n">norm_type</span><span class="o">=</span><span class="default_value">'count'</span></em>, <em class="sig-param"><span class="n">extension</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sbfit/image.html#BkgImage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sbfit.image.BkgImage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sbfit.image.Image</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image</strong> (<em>str</em><em> or </em><em>HDU</em>) – The image to be loaded.</p></li>
+<li><p><strong>norm_keyword</strong> (<em>str</em><em>, </em><em>optional</em>) – The keyword of scaling factor in the header. The default
+norm_keyword = “bkgnorm”.</p></li>
+<li><p><strong>norm_type</strong> (<em>{&quot;count&quot;</em><em>, </em><em>&quot;flux&quot;}</em><em>, </em><em>optional</em>) – The type of the background scaling factor.
+“count” : the ratio between the total background count number in the
+count image and that in the background image.
+“flux” : the ratio between the total background count rate in the count
+image and that in the background image.
+For the “flux” type, the exposure time of the background image need to
+be properly provided. The default norm_type = “count”.</p></li>
+<li><p><strong>extension</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of the hdu that contains the image data. The default
+extension = 0.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<dl class="simple">
+<dt>There are two types of normalisation:</dt><dd><p>One is a ratio between counts rates. In this case we need
+additional information from exposure time.
+Another one is a ratio between counts numbers.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="sbfit.image.BkgImage.bkgnorm">
+<em class="property">property </em><code class="sig-name descname">bkgnorm</code><a class="headerlink" href="#sbfit.image.BkgImage.bkgnorm" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="sbfit.image.BkgImage.exptime">
+<em class="property">property </em><code class="sig-name descname">exptime</code><a class="headerlink" href="#sbfit.image.BkgImage.exptime" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="sbfit.image.BkgImage.norm_type">
+<em class="property">property </em><code class="sig-name descname">norm_type</code><a class="headerlink" href="#sbfit.image.BkgImage.norm_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="sbfit.image.CtsImage">
+<em class="property">class </em><code class="sig-prename descclassname">sbfit.image.</code><code class="sig-name descname">CtsImage</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">image</span></em>, <em class="sig-param"><span class="n">extension</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sbfit/image.html#CtsImage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sbfit.image.CtsImage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sbfit.image.Image</span></code></p>
+<p>The count image class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image</strong> (<em>str</em><em> or </em><em>HDU</em>) – The image to be loaded.</p></li>
+<li><p><strong>extension</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of the hdu that contains the image data. The default
+extension = 0.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="sbfit.image.CtsImage.exptime">
+<em class="property">property </em><code class="sig-name descname">exptime</code><a class="headerlink" href="#sbfit.image.CtsImage.exptime" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="sbfit.image.ExpImage">
+<em class="property">class </em><code class="sig-prename descclassname">sbfit.image.</code><code class="sig-name descname">ExpImage</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">image</span></em>, <em class="sig-param"><span class="n">extension</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sbfit/image.html#ExpImage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sbfit.image.ExpImage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sbfit.image.Image</span></code></p>
+<p>The exposure map class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image</strong> (<em>str</em><em> or </em><em>HDU</em>) – The image to be loaded.</p></li>
+<li><p><strong>extension</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of the hdu that contains the image data. The default
+extension = 0.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="sbfit.image.ExpImage.unit">
+<em class="property">property </em><code class="sig-name descname">unit</code><a class="headerlink" href="#sbfit.image.ExpImage.unit" title="Permalink to this definition">¶</a></dt>
+<dd><p>The unit of the exposure map.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-sbfit.model">
+<span id="sbfit-model"></span><h2>sbfit.model<a class="headerlink" href="#module-sbfit.model" title="Permalink to this headline">¶</a></h2>
+<p>This module defines classes of surface brightness profile models.</p>
+<dl class="py class">
+<dt id="sbfit.model.Beta">
+<em class="property">class </em><code class="sig-prename descclassname">sbfit.model.</code><code class="sig-name descname">Beta</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">norm</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">beta</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">r</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#sbfit.model.Beta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Beta profile.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>number</em>) – The input number for calculation.</p></li>
+<li><p><strong>norm</strong> (<em>number</em>) – The normalization at the center of the cluster.</p></li>
+<li><p><strong>beta</strong> (<em>number</em>) – The beta parameter.</p></li>
+<li><p><strong>r</strong> (<em>number</em>) – The core radius.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p>Cavaliere, A. &amp; Fusco-Femiano, R. 1976, A&amp;A, 500, 95</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="sbfit.model.ConeDoublePowerLaw">
+<em class="property">class </em><code class="sig-prename descclassname">sbfit.model.</code><code class="sig-name descname">ConeDoublePowerLaw</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">norm</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">a1</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">a2</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">phi_b</span><span class="o">=</span><span class="default_value">10.0</span></em>, <em class="sig-param"><span class="n">c</span><span class="o">=</span><span class="default_value">2.0</span></em>, <em class="sig-param"><span class="n">r1</span><span class="o">=</span><span class="default_value">0.5</span></em>, <em class="sig-param"><span class="n">r2</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">phi_max</span><span class="o">=</span><span class="default_value">70</span></em>, <em class="sig-param"><span class="n">center</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">redshift</span><span class="o">=</span><span class="default_value">0.1</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#sbfit.model.ConeDoublePowerLaw" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> – </p></li>
+<li><p><strong>norm</strong> (<em>number</em>) – The electron density after the break (cm^-3).</p></li>
+<li><p><strong>a1</strong> – </p></li>
+<li><p><strong>a2</strong> – </p></li>
+<li><p><strong>phi_b</strong> – </p></li>
+<li><p><strong>c</strong> – </p></li>
+<li><p><strong>r1</strong> (<em>float</em>) – Inner radius of the sector (arcsec).</p></li>
+<li><p><strong>r2</strong> (<em>float</em>) – Outer radius of the sector (arcsec).</p></li>
+<li><p><strong>phi_max</strong> – </p></li>
+<li><p><strong>center</strong> – </p></li>
+<li><p><strong>redshift</strong> (<em>float</em>) – redshift.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="sbfit.model.Constant">
+<em class="property">class </em><code class="sig-prename descclassname">sbfit.model.</code><code class="sig-name descname">Constant</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">norm</span><span class="o">=</span><span class="default_value">0.0</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#sbfit.model.Constant" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constant model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>number</em><em> or </em><em>np.ndarray</em>) – The input number for calculation.</p></li>
+<li><p><strong>norm</strong> (<em>float</em>) – The output constant.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="sbfit.model.DoublePowerLaw">
+<em class="property">class </em><code class="sig-prename descclassname">sbfit.model.</code><code class="sig-name descname">DoublePowerLaw</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">norm</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">a1</span><span class="o">=</span><span class="default_value">0.1</span></em>, <em class="sig-param"><span class="n">a2</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">r</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">c</span><span class="o">=</span><span class="default_value">2.0</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#sbfit.model.DoublePowerLaw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Projected double power law profile.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>number</em>) – The input number for calculation.</p></li>
+<li><p><strong>norm</strong> (<em>number</em>) – The density normalization at the jump.</p></li>
+<li><p><strong>a1</strong> (<em>number</em>) – The power law index of the density profile before the jump.</p></li>
+<li><p><strong>a2</strong> (<em>number</em>) – The power law index of the density profile after the jump.</p></li>
+<li><p><strong>r</strong> (<em>number</em>) – The jump location.</p></li>
+<li><p><strong>c</strong> (<em>number</em>) – The strength of the jump, i.e., the contraction factor.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>x, r have a unit of arcsec;
+n has an arbitrary unit.</p>
+<p class="rubric">References</p>
+<p>Owers et al. 2009, ApJ, 704, 1349.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="sbfit.model.Gaussian">
+<em class="property">class </em><code class="sig-prename descclassname">sbfit.model.</code><code class="sig-name descname">Gaussian</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">norm</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">x0</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">sigma</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#sbfit.model.Gaussian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gaussian profile model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>number</em><em> or </em><em>np.ndarray</em>) – The input number for calculation.</p></li>
+<li><p><strong>norm</strong> (<em>number</em>) – The normalization at the peak.</p></li>
+<li><p><strong>x0</strong> (<em>number</em>) – The center of the Gaussian profile.</p></li>
+<li><p><strong>sigma</strong> (<em>number</em>) – The width of the profile.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="sbfit.model.custom_model">
+<code class="sig-prename descclassname">sbfit.model.</code><code class="sig-name descname">custom_model</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">func</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sbfit/model.html#custom_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sbfit.model.custom_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Model class decorator.
+An alternative version of astropy.modeling.custom_model.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-sbfit.observation">
+<span id="sbfit-observation"></span><h2>sbfit.observation<a class="headerlink" href="#module-sbfit.observation" title="Permalink to this headline">¶</a></h2>
+<p>This module includes observation classes.</p>
+<dl class="py class">
+<dt id="sbfit.observation.Observation">
+<em class="property">class </em><code class="sig-prename descclassname">sbfit.observation.</code><code class="sig-name descname">Observation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cts_image_file</span></em>, <em class="sig-param"><span class="n">exp_image_file</span></em>, <em class="sig-param"><span class="n">bkg_image_file</span></em>, <em class="sig-param"><span class="n">bkg_norm_type</span><span class="o">=</span><span class="default_value">'count'</span></em>, <em class="sig-param"><span class="n">bkg_norm_keyword</span><span class="o">=</span><span class="default_value">'bkgnorm'</span></em>, <em class="sig-param"><span class="n">extension</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sbfit/observation.html#Observation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sbfit.observation.Observation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>The class of a single observation, which contains a count map, an exposure
+map, and a background map.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cts_image_file</strong> (<em>str</em>) – The count image of the observation.</p></li>
+<li><p><strong>exp_image_file</strong> (<em>str</em>) – The exposure map of the observation.</p></li>
+<li><p><strong>bkg_image_file</strong> (<em>str</em>) – The image that represents the background level of the observation.</p></li>
+<li><p><strong>bkg_norm_type</strong> (<em>{&quot;count&quot;</em><em>, </em><em>&quot;flux&quot;}</em><em>, </em><em>optional</em>) – The type of the background scaling factor.
+“count” : the ratio between the total background count number in the
+count image and that in the background image.
+“flux” : the ratio between the total background count rate in the count
+image and that in the background image.
+For the “flux” type, the exposure time of the background image need to
+be properly provided. The default norm_type = “count”.</p></li>
+<li><p><strong>bkg_norm_keyword</strong> (<em>str</em><em>, </em><em>optional</em>) – The keyword of scaling factor in the background image header.
+The default norm_keyword = “bkgnorm”.</p></li>
+<li><p><strong>extension</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of the hdu that contains the image data. The default
+extension = 0.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="sbfit.observation.Observation.bkg_image">
+<em class="property">property </em><code class="sig-name descname">bkg_image</code><a class="headerlink" href="#sbfit.observation.Observation.bkg_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>The background image.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="sbfit.observation.Observation.cts_image">
+<em class="property">property </em><code class="sig-name descname">cts_image</code><a class="headerlink" href="#sbfit.observation.Observation.cts_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>The count image.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="sbfit.observation.Observation.exp_image">
+<em class="property">property </em><code class="sig-name descname">exp_image</code><a class="headerlink" href="#sbfit.observation.Observation.exp_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>The exposure map.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="sbfit.observation.Observation.exposure_unit">
+<em class="property">property </em><code class="sig-name descname">exposure_unit</code><a class="headerlink" href="#sbfit.observation.Observation.exposure_unit" title="Permalink to this definition">¶</a></dt>
+<dd><p>The unit of the exposure map.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="sbfit.observation.Observation.instrument">
+<em class="property">property </em><code class="sig-name descname">instrument</code><a class="headerlink" href="#sbfit.observation.Observation.instrument" title="Permalink to this definition">¶</a></dt>
+<dd><p>The instrument by which the observation was performed.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="sbfit.observation.Observation.pixel_scale">
+<em class="property">property </em><code class="sig-name descname">pixel_scale</code><a class="headerlink" href="#sbfit.observation.Observation.pixel_scale" title="Permalink to this definition">¶</a></dt>
+<dd><p>The pixel scale of the FITS images.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="sbfit.observation.Observation.telescope">
+<em class="property">property </em><code class="sig-name descname">telescope</code><a class="headerlink" href="#sbfit.observation.Observation.telescope" title="Permalink to this definition">¶</a></dt>
+<dd><p>The telescope by which the observation was performed.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="sbfit.observation.ObservationList">
+<em class="property">class </em><code class="sig-prename descclassname">sbfit.observation.</code><code class="sig-name descname">ObservationList</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obs_list</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sbfit/observation.html#ObservationList"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sbfit.observation.ObservationList" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>The class that contains all individual observations of an object that from
+the same instrument.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>obs_list</strong> (<em>list</em><em>, </em><em>optional</em>) – The list of observations to be combined. The default obs_list = None.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>All individual observations must have the same pixel scale and exposure
+map unit.</p>
+<dl class="py method">
+<dt id="sbfit.observation.ObservationList.add_observation">
+<code class="sig-name descname">add_observation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">new_observation</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sbfit/observation.html#ObservationList.add_observation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sbfit.observation.ObservationList.add_observation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a new observation object into the current observation list.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>new_observation</strong> (<a class="reference internal" href="#sbfit.observation.Observation" title="sbfit.observation.Observation"><em>Observation</em></a>) – The new observation.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="sbfit.observation.ObservationList.add_observation_from_file">
+<code class="sig-name descname">add_observation_from_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cts_image_file</span></em>, <em class="sig-param"><span class="n">exp_image_file</span></em>, <em class="sig-param"><span class="n">bkg_image_file</span></em>, <em class="sig-param"><span class="n">bkg_norm_type</span><span class="o">=</span><span class="default_value">'count'</span></em>, <em class="sig-param"><span class="n">bkg_norm_keyword</span><span class="o">=</span><span class="default_value">'bkgnorm'</span></em>, <em class="sig-param"><span class="n">extension</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sbfit/observation.html#ObservationList.add_observation_from_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sbfit.observation.ObservationList.add_observation_from_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a new observation from FITS files and add it into the current
+observation list.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cts_image_file</strong> (<em>str</em>) – The count image of the observation.</p></li>
+<li><p><strong>exp_image_file</strong> (<em>str</em>) – The exposure map of the observation.</p></li>
+<li><p><strong>bkg_image_file</strong> (<em>str</em>) – The image that represents the background level of the observation.</p></li>
+<li><p><strong>bkg_norm_type</strong> (<em>{&quot;count&quot;</em><em>, </em><em>&quot;flux&quot;}</em><em>, </em><em>optional</em>) – The type of the background scaling factor.
+“count” : the ratio between the total background count number in
+the count image and that in the background image.
+“flux” : the ratio between the total background count rate in the
+count image and that in the background image.
+For the “flux” type, the exposure time of the background image need
+to be properly provided. The default norm_type = “count”.</p></li>
+<li><p><strong>bkg_norm_keyword</strong> (<em>str</em><em>, </em><em>optional</em>) – The keyword of scaling factor in the background image header.
+The default norm_keyword = “bkgnorm”.</p></li>
+<li><p><strong>extension</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of the hdu that contains the image data. The default
+extension = 0.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The exposure_unit attribute will be updated.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#sbfit.observation.Observation" title="sbfit.observation.Observation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Observation</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="sbfit.observation.ObservationList.exposure_unit">
+<em class="property">property </em><code class="sig-name descname">exposure_unit</code><a class="headerlink" href="#sbfit.observation.ObservationList.exposure_unit" title="Permalink to this definition">¶</a></dt>
+<dd><p>The unit of the exposure map.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="sbfit.observation.ObservationList.get_profile">
+<code class="sig-name descname">get_profile</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">region_list</span></em>, <em class="sig-param"><span class="n">channel_width</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">profile_axis</span><span class="o">=</span><span class="default_value">'x'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sbfit/observation.html#ObservationList.get_profile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sbfit.observation.ObservationList.get_profile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get an averaged surface brightness profile from the current observation
+list .</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>region_list</strong> (<a class="reference internal" href="#sbfit.region.RegionList" title="sbfit.region.RegionList"><em>RegionList</em></a>) – </p></li>
+<li><p><strong>channel_width</strong> – </p></li>
+<li><p><strong>profile_axis</strong> – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="sbfit.observation.ObservationList.observations">
+<em class="property">property </em><code class="sig-name descname">observations</code><a class="headerlink" href="#sbfit.observation.ObservationList.observations" title="Permalink to this definition">¶</a></dt>
+<dd><p>The list of all individual observations.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="sbfit.observation.ObservationList.pixel_scale">
+<em class="property">property </em><code class="sig-name descname">pixel_scale</code><a class="headerlink" href="#sbfit.observation.ObservationList.pixel_scale" title="Permalink to this definition">¶</a></dt>
+<dd><p>The pixel scale of the FITS images.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-sbfit.profile">
+<span id="sbfit-profile"></span><h2>sbfit.profile<a class="headerlink" href="#module-sbfit.profile" title="Permalink to this headline">¶</a></h2>
+<p>This module defines the profile class.</p>
+<dl class="py class">
+<dt id="sbfit.profile.Profile">
+<em class="property">class </em><code class="sig-prename descclassname">sbfit.profile.</code><code class="sig-name descname">Profile</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">raw_data</span><span class="p">:</span> <span class="n">astropy.table.table.Table</span></em>, <em class="sig-param"><span class="n">channel_width</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">channel_start</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">pixel_scale</span><span class="o">=</span><span class="default_value">0.01</span></em>, <em class="sig-param"><span class="n">exposure_unit</span><span class="o">=</span><span class="default_value">Unit('s')</span></em>, <em class="sig-param"><span class="n">profile_axis</span><span class="o">=</span><span class="default_value">'x'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sbfit/profile.html#Profile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sbfit.profile.Profile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>The Profile class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>raw_data</strong> (<em>Table</em>) – The raw table of data of individual pixels.</p></li>
+<li><p><strong>channel_width</strong> (<em>number</em><em>, </em><em>optional</em>) – The width of each channel, which is the minimum unresolved size.
+The default channel_width = 1 arcsec.</p></li>
+<li><p><strong>pixel_scale</strong> (<em>number</em><em>, </em><em>optional</em>) – The image pixel scale. The default pixel_scale = 0.01 degree.</p></li>
+<li><p><strong>exposure_unit</strong> (<em>Unit</em><em>, </em><em>optional</em>) – The unit of the exposure map. The default exposure_unit = s.</p></li>
+<li><p><strong>profile_axis</strong> (<em>{&quot;x&quot;</em><em>, </em><em>&quot;y&quot;}</em><em>, </em><em>optional</em>) – The type of the profile.
+“x”: radial profile with x-axis unit of arcsec.
+“y”: azimuthal profile with x-axis unit of degree.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="sbfit.profile.Profile.binned_profile">
+<em class="property">property </em><code class="sig-name descname">binned_profile</code><a class="headerlink" href="#sbfit.profile.Profile.binned_profile" title="Permalink to this definition">¶</a></dt>
+<dd><p>The binned surface brightness profile.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="sbfit.profile.Profile.calculate">
+<code class="sig-name descname">calculate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">update</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sbfit/profile.html#Profile.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sbfit.profile.Profile.calculate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the C-statistic value for the current model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>update</strong> (<em>bool</em><em>, </em><em>optional</em>) – Update the model profile, default = True.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>stat_value</strong> – The calculated C-statistic value.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="sbfit.profile.Profile.channel_width">
+<em class="property">property </em><code class="sig-name descname">channel_width</code><a class="headerlink" href="#sbfit.profile.Profile.channel_width" title="Permalink to this definition">¶</a></dt>
+<dd><p>The width of each channel. A channel is the smallest discrete element
+of the profile.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="sbfit.profile.Profile.deepcopy">
+<code class="sig-name descname">deepcopy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sbfit/profile.html#Profile.deepcopy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sbfit.profile.Profile.deepcopy" title="Permalink to this definition">¶</a></dt>
+<dd><p>To create a deepcopy of the profile.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>profile</strong> – A deepcopy of the profile itself.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#sbfit.profile.Profile" title="sbfit.profile.Profile">Profile</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="sbfit.profile.Profile.error">
+<em class="property">property </em><code class="sig-name descname">error</code><a class="headerlink" href="#sbfit.profile.Profile.error" title="Permalink to this definition">¶</a></dt>
+<dd><p>The error estimated by the MCMC method.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="sbfit.profile.Profile.error_approx">
+<em class="property">property </em><code class="sig-name descname">error_approx</code><a class="headerlink" href="#sbfit.profile.Profile.error_approx" title="Permalink to this definition">¶</a></dt>
+<dd><p>The approximate error from the fit routine.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="sbfit.profile.Profile.fit">
+<code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">show_step</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">show_result</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">record_fit</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">tolerance</span><span class="o">=</span><span class="default_value">0.01</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sbfit/profile.html#Profile.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sbfit.profile.Profile.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit binned profile with the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>show_step</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether show C-statistic value of each fit step.</p></li>
+<li><p><strong>show_result</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether show fit result.</p></li>
+<li><p><strong>record_fit</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether record the fit result in the Profile object.</p></li>
+<li><p><strong>tolerance</strong> (<em>float</em><em>, </em><em>optional</em>) – Tolerance to terminate the fit iteration.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>stat</strong> – The best-fit C-statistic value.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="sbfit.profile.Profile.mcmc_error">
+<code class="sig-name descname">mcmc_error</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nsteps</span><span class="o">=</span><span class="default_value">5000</span></em>, <em class="sig-param"><span class="n">nwalkers</span><span class="o">=</span><span class="default_value">32</span></em>, <em class="sig-param"><span class="n">burnin</span><span class="o">=</span><span class="default_value">500</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sbfit/profile.html#Profile.mcmc_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sbfit.profile.Profile.mcmc_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>To estimate the errors by using the MCMC method in the emcee package.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>nsteps</strong> (<em>int</em><em>, </em><em>optional</em>) – The steps of the MCMC chain. The default nsteps = 5000.</p></li>
+<li><p><strong>nwalkers</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of MCMC walkers. The default nwalkers = 32.</p></li>
+<li><p><strong>burnin</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of steps at the beginning of the chain, which should be
+discarded when estimating the errors.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">emcee</span></code></dt><dd><p><a class="reference external" href="https://emcee.readthedocs.io/en/stable/">https://emcee.readthedocs.io/en/stable/</a></p>
+</dd>
+</dl>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="sbfit.profile.Profile.mcmc_flat_samples">
+<em class="property">property </em><code class="sig-name descname">mcmc_flat_samples</code><a class="headerlink" href="#sbfit.profile.Profile.mcmc_flat_samples" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="sbfit.profile.Profile.model">
+<em class="property">property </em><code class="sig-name descname">model</code><a class="headerlink" href="#sbfit.profile.Profile.model" title="Permalink to this definition">¶</a></dt>
+<dd><p>The model of the profile.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="sbfit.profile.Profile.plot">
+<code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">plot_type</span><span class="o">=</span><span class="default_value">'profile'</span></em>, <em class="sig-param"><span class="n">scale</span><span class="o">=</span><span class="default_value">'loglog'</span></em>, <em class="sig-param"><span class="n">xlim</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ylim</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sbfit/profile.html#Profile.plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sbfit.profile.Profile.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>To show different types of data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>plot_type</strong> (<em>{&quot;profile&quot;</em><em>, </em><em>&quot;mcmc_chain&quot;</em><em>, </em><em>&quot;contour&quot;}</em><em>, </em><em>optional</em>) – Types of plot.
+“profile” : The binned surface brightness profile.
+“mcmc_chain” : The MCMC chain of each free parameter after
+estimating the errors.
+“contour” : The “corner” plot of free parameters after estimating
+the errors.
+The default plot_type = “profile”.</p></li>
+<li><p><strong>scale</strong> (<em>{&quot;loglog&quot;</em><em>, </em><em>&quot;semilogx&quot;</em><em>, </em><em>&quot;semilogy&quot;</em><em>, </em><em>&quot;linear&quot;}</em><em>, </em><em>optional</em>) – The X-Y axis scale of the profile plot.
+The default scale = “loglog”.</p></li>
+<li><p><strong>xlim</strong> (<em>tuple</em><em>, </em><em>optional</em>) – The X-axis limits of the profile.</p></li>
+<li><p><strong>ylim</strong> (<em>tuple</em><em>, </em><em>optional</em>) – The Y-axis limits of the profile.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="sbfit.profile.Profile.rebin">
+<code class="sig-name descname">rebin</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">start</span></em>, <em class="sig-param"><span class="n">end</span></em>, <em class="sig-param"><span class="n">method</span><span class="o">=</span><span class="default_value">'min_cts'</span></em>, <em class="sig-param"><span class="n">min_cts</span><span class="o">=</span><span class="default_value">30</span></em>, <em class="sig-param"><span class="n">lin_width</span><span class="o">=</span><span class="default_value">10</span></em>, <em class="sig-param"><span class="n">log_width</span><span class="o">=</span><span class="default_value">0.05</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sbfit/profile.html#Profile.rebin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sbfit.profile.Profile.rebin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rebin the profile from the raw profile.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start</strong> (<em>float</em>) – Start point of the profile.</p></li>
+<li><p><strong>end</strong> (<em>float</em>) – End point of the profile. Depending on different methods, the
+actual boundary of the last bin can be different from this value.</p></li>
+<li><p><strong>method</strong> (<em>{&quot;min_cts&quot;</em><em>, </em><em>&quot;lin&quot;</em><em>, </em><em>&quot;log&quot;}</em><em>, </em><em>optional</em>) – The method to bin the profile.
+“min_cts” : each bin has at least a certain number of counts.
+“lin” : each bin has the same width.
+“log” : each bin has the same width in the logarithmic space.
+The default method = “min_cts”.</p></li>
+<li><p><strong>min_cts</strong> (<em>int</em><em>, </em><em>optional</em>) – The minimum count number in each of the bins. Used if
+method == “min_cts”. The default min_cts = 30.</p></li>
+<li><p><strong>lin_width</strong> (<em>float</em><em>, </em><em>optional</em>) – The width of each bin. Used if method == “lin_width”. The default
+lin_width = 10 arcsec.</p></li>
+<li><p><strong>log_width</strong> (<em>float</em><em>, </em><em>optional</em>) – The width of each bin in the logarithmic space, in unit of dex.
+Used if method == “log_width”. The default log_width = 0.05.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="sbfit.profile.Profile.set_model">
+<code class="sig-name descname">set_model</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">model</span><span class="p">:</span> <span class="n">astropy.modeling.core.Model</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sbfit/profile.html#Profile.set_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sbfit.profile.Profile.set_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set model for the Profile object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>model</strong> (<em>Model</em>) – The model used for fit.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="sbfit.profile.Profile.set_smooth_matrix">
+<code class="sig-name descname">set_smooth_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">kernel_type</span></em>, <em class="sig-param"><span class="n">sigma</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">king_rc</span><span class="o">=</span><span class="default_value">4</span></em>, <em class="sig-param"><span class="n">king_alpha</span><span class="o">=</span><span class="default_value">1.4</span></em>, <em class="sig-param"><span class="n">custom_kernel</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sbfit/profile.html#Profile.set_smooth_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sbfit.profile.Profile.set_smooth_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the smoothing matrix for the profile to account for the PSF of the
+telescope.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>kernel_type</strong> (<em>{&quot;identity&quot;</em><em>, </em><em>&quot;gaussian&quot;</em><em>, </em><em>&quot;king&quot;</em><em>, </em><em>&quot;custom&quot;}</em>) – Type of the PSF kernel.
+“identity”: Identity matrix.
+“gaussian”: Gaussian profile.
+“king”: King profile.
+“custom”: User defined kernel.
+The default kernel_type = “identity”.</p></li>
+<li><p><strong>sigma</strong> (<em>number</em><em>, </em><em>optional</em>) – The sigma of Gaussian kernel. The default sigma = 1 arcsec.</p></li>
+<li><p><strong>king_rc</strong> (<em>number</em><em>, </em><em>optional</em>) – The core radius of the king profile.</p></li>
+<li><p><strong>king_alpha</strong> (<em>number</em><em>, </em><em>optional</em>) – The power law index of the king profile. The default
+king_alpha=1.4.</p></li>
+<li><p><strong>custom_kernel</strong> (<em>Kernel</em><em>, </em><em>optional</em>) – The customized smoothing kernel.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="sbfit.profile.Profile.update_mcmc_flat_sample">
+<code class="sig-name descname">update_mcmc_flat_sample</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">burnin</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sbfit/profile.html#Profile.update_mcmc_flat_sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sbfit.profile.Profile.update_mcmc_flat_sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the flat MCMC sample with a new burn-in steps value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>burnin</strong> (<em>int</em>) – The number of steps at the beginning of the chain, which should be
+discarded when estimating the errors.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-sbfit.region">
+<span id="sbfit-region"></span><h2>sbfit.region<a class="headerlink" href="#module-sbfit.region" title="Permalink to this headline">¶</a></h2>
+<p>This module defines all supported DS9 region classes.</p>
+<p>Regions are classified as inclusive regions and exclusive regions. Inclusive
+regions are used for defining the profile extraction region shape and
+direction, while exclusive regions are used to mask out contaminated pixels.
+Inclusive regions are “Panda”, “Epanda”, and “Projection”. Exclusive regions
+are “Circle” and “Ellipse”.</p>
+<p>Currently, the supported coordinate frames are “fk5”, “icrs”, and “image”.</p>
+<dl class="py class">
+<dt id="sbfit.region.Circle">
+<em class="property">class </em><code class="sig-prename descclassname">sbfit.region.</code><code class="sig-name descname">Circle</code><a class="reference internal" href="_modules/sbfit/region.html#Circle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sbfit.region.Circle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#sbfit.region.ExcludeRegion" title="sbfit.region.ExcludeRegion"><code class="xref py py-class docutils literal notranslate"><span class="pre">sbfit.region.ExcludeRegion</span></code></a></p>
+<p>The Circle region.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="sbfit.region.Ellipse">
+<em class="property">class </em><code class="sig-prename descclassname">sbfit.region.</code><code class="sig-name descname">Ellipse</code><a class="reference internal" href="_modules/sbfit/region.html#Ellipse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sbfit.region.Ellipse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#sbfit.region.ExcludeRegion" title="sbfit.region.ExcludeRegion"><code class="xref py py-class docutils literal notranslate"><span class="pre">sbfit.region.ExcludeRegion</span></code></a></p>
+<p>The Ellipse region.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="sbfit.region.Epanda">
+<em class="property">class </em><code class="sig-prename descclassname">sbfit.region.</code><code class="sig-name descname">Epanda</code><a class="reference internal" href="_modules/sbfit/region.html#Epanda"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sbfit.region.Epanda" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#sbfit.region.IncludeRegion" title="sbfit.region.IncludeRegion"><code class="xref py py-class docutils literal notranslate"><span class="pre">sbfit.region.IncludeRegion</span></code></a></p>
+<p>The Epanda region.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="sbfit.region.ExcludeRegion">
+<em class="property">class </em><code class="sig-prename descclassname">sbfit.region.</code><code class="sig-name descname">ExcludeRegion</code><a class="reference internal" href="_modules/sbfit/region.html#ExcludeRegion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sbfit.region.ExcludeRegion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sbfit.region.Region</span></code></p>
+<p>The base class of all exclusive regions.</p>
+<dl class="py method">
+<dt id="sbfit.region.ExcludeRegion.mask">
+<code class="sig-name descname">mask</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">imgdata</span></em>, <em class="sig-param"><span class="n">header</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sbfit/region.html#ExcludeRegion.mask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sbfit.region.ExcludeRegion.mask" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>imgdata</strong> (<em>ndarray</em>) – The input image array based on which the exclusion mask is defined.</p></li>
+<li><p><strong>header</strong> (<em>fits.Header</em>) – The FITS header of the input image, which is used for convert
+sky coordinate to the image coordinate.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>mask</strong> – The calculated mask.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="sbfit.region.IncludeRegion">
+<em class="property">class </em><code class="sig-prename descclassname">sbfit.region.</code><code class="sig-name descname">IncludeRegion</code><a class="reference internal" href="_modules/sbfit/region.html#IncludeRegion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sbfit.region.IncludeRegion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sbfit.region.Region</span></code></p>
+<p>The base class of all inclusive regions.</p>
+<dl class="py method">
+<dt id="sbfit.region.IncludeRegion.get_x_coordinate">
+<code class="sig-name descname">get_x_coordinate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">imgdata</span></em>, <em class="sig-param"><span class="n">header</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">axis</span><span class="o">=</span><span class="default_value">'x'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sbfit/region.html#IncludeRegion.get_x_coordinate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sbfit.region.IncludeRegion.get_x_coordinate" title="Permalink to this definition">¶</a></dt>
+<dd><p>For a given image, calculate the X coordinate on the profile for
+each pixel. Meanwhile, an inclusive mask based on the region shape is
+calculated.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>imgdata</strong> (<em>ndarray</em>) – The input image array to calculate X, Y coordinate based on the
+extraction region.</p></li>
+<li><p><strong>header</strong> (<em>fits.Header</em>) – The FITS header of the input image, which is used for convert
+sky coordinate to the image coordinate.</p></li>
+<li><p><strong>axis</strong> (<em>{&quot;x&quot;</em><em>, </em><em>&quot;y&quot;}</em><em>, </em><em>optional</em>) – The extracted profile direction.
+“X”: azimuthally averaged radial profile.
+“Y”: radially averaged azimuthal profile (only supported by Panda).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>profile_xcoor</strong> (<em>ndarray</em>) – Calculated X coordinate of each pixel.</p></li>
+<li><p><strong>profile_mask</strong> (<em>ndarray</em>) – The include mask of the region.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="sbfit.region.Panda">
+<em class="property">class </em><code class="sig-prename descclassname">sbfit.region.</code><code class="sig-name descname">Panda</code><a class="reference internal" href="_modules/sbfit/region.html#Panda"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sbfit.region.Panda" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#sbfit.region.IncludeRegion" title="sbfit.region.IncludeRegion"><code class="xref py py-class docutils literal notranslate"><span class="pre">sbfit.region.IncludeRegion</span></code></a></p>
+<p>The Panda region.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="sbfit.region.Projection">
+<em class="property">class </em><code class="sig-prename descclassname">sbfit.region.</code><code class="sig-name descname">Projection</code><a class="reference internal" href="_modules/sbfit/region.html#Projection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sbfit.region.Projection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#sbfit.region.IncludeRegion" title="sbfit.region.IncludeRegion"><code class="xref py py-class docutils literal notranslate"><span class="pre">sbfit.region.IncludeRegion</span></code></a></p>
+<p>The Projection region.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="sbfit.region.RegionList">
+<em class="property">class </em><code class="sig-prename descclassname">sbfit.region.</code><code class="sig-name descname">RegionList</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">frame</span><span class="o">=</span><span class="default_value">'fk5'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sbfit/region.html#RegionList"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sbfit.region.RegionList" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This is a container of a number of region objects. The RegionList object
+can have one inclusive region and multiple exclusive regions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>frame</strong> (<em>{&quot;fk5&quot;</em><em>, </em><em>&quot;icrs&quot;</em><em>, </em><em>&quot;image&quot;}</em><em>, </em><em>optional</em>) – The image coordinate frame of the regions. The default frame = “fk5”.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="sbfit.region.RegionList.add_region">
+<code class="sig-name descname">add_region</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">region</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sbfit/region.html#RegionList.add_region"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sbfit.region.RegionList.add_region" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the inclusive region or add an exclusive region into the current
+exclusive region list.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>region</strong> (<em>Region</em>) – The region object to be updated or added.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="sbfit.region.RegionList.exclude">
+<em class="property">property </em><code class="sig-name descname">exclude</code><a class="headerlink" href="#sbfit.region.RegionList.exclude" title="Permalink to this definition">¶</a></dt>
+<dd><p>The exclusive region list.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="sbfit.region.RegionList.frame">
+<em class="property">property </em><code class="sig-name descname">frame</code><a class="headerlink" href="#sbfit.region.RegionList.frame" title="Permalink to this definition">¶</a></dt>
+<dd><p>The region coordinate frame.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="sbfit.region.RegionList.include">
+<em class="property">property </em><code class="sig-name descname">include</code><a class="headerlink" href="#sbfit.region.RegionList.include" title="Permalink to this definition">¶</a></dt>
+<dd><p>The inclusive region.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="sbfit.region.read_region">
+<code class="sig-prename descclassname">sbfit.region.</code><code class="sig-name descname">read_region</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">region_file</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sbfit/region.html#read_region"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sbfit.region.read_region" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a DS9 region file and create a region list.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>region_file</strong> (<em>str</em>) – The DS9 region file.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>region_list</strong> – The region list contains all supported regions that in the region file.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#sbfit.region.RegionList" title="sbfit.region.RegionList">RegionList</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-sbfit.statistics">
+<span id="sbfit-statistics"></span><h2>sbfit.statistics<a class="headerlink" href="#module-sbfit.statistics" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="sbfit.statistics.chi_square">
+<code class="sig-prename descclassname">sbfit.statistics.</code><code class="sig-name descname">chi_square</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">y_model</span></em>, <em class="sig-param"><span class="n">err</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sbfit/statistics.html#chi_square"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sbfit.statistics.chi_square" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="sbfit.statistics.chi_square_deriv">
+<code class="sig-prename descclassname">sbfit.statistics.</code><code class="sig-name descname">chi_square_deriv</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">y_model</span></em>, <em class="sig-param"><span class="n">err</span></em>, <em class="sig-param"><span class="n">model_deriv</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sbfit/statistics.html#chi_square_deriv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sbfit.statistics.chi_square_deriv" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="sbfit.statistics.cstat">
+<code class="sig-prename descclassname">sbfit.statistics.</code><code class="sig-name descname">cstat</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">y_model</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sbfit/statistics.html#cstat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sbfit.statistics.cstat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate c-stat value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y</strong> (<em>np.ndarray</em>) – Observed values.</p></li>
+<li><p><strong>y_model</strong> (<em>np.ndarray</em>) – Predicted values.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>cstat</strong> – C-statistic value</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-sbfit.utils">
+<span id="sbfit-utils"></span><h2>sbfit.utils<a class="headerlink" href="#module-sbfit.utils" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="sbfit.utils.King">
+<em class="property">class </em><code class="sig-prename descclassname">sbfit.utils.</code><code class="sig-name descname">King</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">amplitude</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">rc</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">r0</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">alpha</span><span class="o">=</span><span class="default_value">1.5</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sbfit/utils.html#King"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sbfit.utils.King" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">astropy.modeling.core.Fittable1DModel</span></code></p>
+<dl class="py attribute">
+<dt id="sbfit.utils.King.alpha">
+<code class="sig-name descname">alpha</code><em class="property"> = Parameter('alpha', value=1.5)</em><a class="headerlink" href="#sbfit.utils.King.alpha" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="sbfit.utils.King.amplitude">
+<code class="sig-name descname">amplitude</code><em class="property"> = Parameter('amplitude', value=1.0)</em><a class="headerlink" href="#sbfit.utils.King.amplitude" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="sbfit.utils.King.evaluate">
+<code class="sig-name descname">evaluate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">amplitude</span></em>, <em class="sig-param"><span class="n">rc</span></em>, <em class="sig-param"><span class="n">r0</span></em>, <em class="sig-param"><span class="n">alpha</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sbfit/utils.html#King.evaluate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sbfit.utils.King.evaluate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate the model on some input variables.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="sbfit.utils.King.n_inputs">
+<code class="sig-name descname">n_inputs</code><em class="property"> = 1</em><a class="headerlink" href="#sbfit.utils.King.n_inputs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="sbfit.utils.King.n_outputs">
+<code class="sig-name descname">n_outputs</code><em class="property"> = 1</em><a class="headerlink" href="#sbfit.utils.King.n_outputs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="sbfit.utils.King.param_names">
+<code class="sig-name descname">param_names</code><em class="property"> = ('amplitude', 'rc', 'r0', 'alpha')</em><a class="headerlink" href="#sbfit.utils.King.param_names" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="sbfit.utils.King.r0">
+<code class="sig-name descname">r0</code><em class="property"> = Parameter('r0', value=0.0)</em><a class="headerlink" href="#sbfit.utils.King.r0" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="sbfit.utils.King.rc">
+<code class="sig-name descname">rc</code><em class="property"> = Parameter('rc', value=1.0)</em><a class="headerlink" href="#sbfit.utils.King.rc" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="sbfit.utils.get_free_parameter">
+<code class="sig-prename descclassname">sbfit.utils.</code><code class="sig-name descname">get_free_parameter</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">model</span><span class="p">:</span> <span class="n">astropy.modeling.core.Model</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sbfit/utils.html#get_free_parameter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sbfit.utils.get_free_parameter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="sbfit.utils.get_parameter_bounds">
+<code class="sig-prename descclassname">sbfit.utils.</code><code class="sig-name descname">get_parameter_bounds</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">model</span><span class="p">:</span> <span class="n">astropy.modeling.core.Model</span></em>, <em class="sig-param"><span class="n">param_names</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sbfit/utils.html#get_parameter_bounds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sbfit.utils.get_parameter_bounds" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="sbfit.utils.get_pixel_scale">
+<code class="sig-prename descclassname">sbfit.utils.</code><code class="sig-name descname">get_pixel_scale</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">header</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sbfit/utils.html#get_pixel_scale"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sbfit.utils.get_pixel_scale" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="sbfit.utils.get_uncertainty">
+<code class="sig-prename descclassname">sbfit.utils.</code><code class="sig-name descname">get_uncertainty</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sample</span></em>, <em class="sig-param"><span class="n">nbins</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">centroid</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sbfit/utils.html#get_uncertainty"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sbfit.utils.get_uncertainty" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the mode and 1sigma uncertainties for a given discrete sample.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sample</strong> (<em>Array</em>) – </p></li>
+<li><p><strong>nbins</strong> (<em>int</em>) – Number of histogram bins. Default = None.</p></li>
+<li><p><strong>centroid</strong> (<em>number</em>) – The given mode. Default = None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>mode</strong> (<em>float</em>)</p></li>
+<li><p><strong>up_error</strong> (<em>float</em>)</p></li>
+<li><p><strong>low_error</strong> (<em>float</em>)</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="sbfit.utils.load_image">
+<code class="sig-prename descclassname">sbfit.utils.</code><code class="sig-name descname">load_image</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span></em>, <em class="sig-param"><span class="n">extension</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sbfit/utils.html#load_image"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sbfit.utils.load_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read FITS image
+The default extension = 0 is the primary HDU.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="sbfit.utils.sky_to_pixel">
+<code class="sig-prename descclassname">sbfit.utils.</code><code class="sig-name descname">sky_to_pixel</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">header</span></em>, <em class="sig-param"><span class="n">unit</span><span class="o">=</span><span class="default_value">'deg'</span></em>, <em class="sig-param"><span class="n">frame</span><span class="o">=</span><span class="default_value">'icrs'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sbfit/utils.html#sky_to_pixel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sbfit.utils.sky_to_pixel" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="acknowledgement.html" class="btn btn-neutral float-right" title="Acknowledgement" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="guide/concept/fit.html" class="btn btn-neutral float-left" title="Model fitting" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2019-2021, Xiaoyuan Zhang.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
