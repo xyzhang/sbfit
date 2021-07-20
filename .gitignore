@@ -1,0 +1,8 @@
+.*
+!.gitignore
+__pycache__
+build
+dist
+*.egg-info
+test_env
+docs/_*
