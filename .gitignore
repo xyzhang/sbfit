@@ -1,5 +1,6 @@
 .*
 !.gitignore
+!.readthedocs.yaml
 __pycache__
 build
 dist
