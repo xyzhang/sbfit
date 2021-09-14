@@ -687,7 +687,7 @@ class Profile(object):
                 self._stat_deriv()).T)  # Eq. 15.5.8 Numerical Recipes 3rd
             modified_alpha = alpha + np.diag(
                 np.diag(alpha)) * damp_factor  # Eq. 15.5.13
-            shift: np.matrix = np.linalg.inv(
+            shift: np.matrix = np.linalg.pinv(
                 modified_alpha) * beta  # Eq. 15.5.14
             # shift = np.array(shift).flatten()
             new_pvalues_free = pvalues_free + np.array(shift).flatten()
@@ -724,7 +724,7 @@ class Profile(object):
         if show_step:
             print("Iteration terminated.")
         errors = np.array(np.sqrt(
-            np.abs(np.linalg.inv(alpha).diagonal()))).flatten()
+            np.abs(np.linalg.pinv(alpha).diagonal()))).flatten()
         return stat, errors
 
     def _stat_deriv(self, pnames=None):
