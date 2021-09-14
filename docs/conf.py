@@ -30,7 +30,7 @@ extensions = ['sphinx.ext.viewcode', 'sphinx.ext.napoleon',
               'myst_parser', 'sphinx.ext.autodoc',
               # 'sphinx.ext.autosummary',
               'sphinx_rtd_theme', 'sphinx_automodapi.automodapi',
-              'sphinx.ext.autosectionlabel'
+              'sphinx.ext.autosectionlabel', 'nbsphinx',
               # 'recommonmark'
               ]
 
@@ -80,3 +80,6 @@ html_sidebars = {
 }
 """
 
+suppress_warnings = [
+    'nbsphinx',
+]

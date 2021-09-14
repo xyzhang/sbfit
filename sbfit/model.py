@@ -182,27 +182,32 @@ def Beta(x, norm=1., beta=1., r=1.):
 def ConeDoublePowerLaw(x, norm=1, a1=0, a2=1.0, phi_b=10., c=2.0, r1=0.5,
                        r2=1.0, phi_max=70, center=0, redshift=0.1):
     """
+    A projected cone shaped double power law profile.
 
     Parameters
     ----------
-    x
+    x : number
+        The input number for calculation.
     norm : number
         The electron density after the break (cm^-3).
-    a1
-    a2
-    phi_b
-    c
+    a1 : number
+        The first power law index.
+    a2 : number
+        The second power law index
+    phi_b : number
+        Break position.
+    c : number
+        Strength of discontinuity.
     r1 : float
         Inner radius of the sector (arcsec).
     r2 : float
         Outer radius of the sector (arcsec).
-    phi_max
-    center
+    phi_max : number
+        The outer azimuth boundary.
+    center : number
+        The center position of the cone.
     redshift: float
         redshift.
-
-    Returns
-    -------
 
     """
     x = x - center
