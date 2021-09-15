@@ -1,0 +1,11 @@
+authors:
+  -
+    family-names: Zhang
+    given-names: Xiaoyuan
+cff-version: "0.2.0"
+date-released: 2021-09-14
+doi: "10.5281/zenodo.5507575"
+message: "If you use this software, please cite it using these metadata."
+repository-code: "https://github.com/xyzhang/sbfit/tree/v0.2.0"
+title: Sbfit
+version: "0.2.0"
