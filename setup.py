@@ -1,4 +1,5 @@
 from setuptools import setup, find_packages
+import pathlib
 
 import sbfit
 
@@ -19,5 +20,7 @@ setup(
     python_requires=">=3.7",
     author='Xiaoyuan Zhang',
     author_email='x.zhang@sron.nl',
-    description='X-ray extended source surface brightness fitting toolkit.',
+    description='Astronomical X-ray sources surface brightness profile fitting package',
+    long_description=(pathlib.Path(__file__).parent / "README.md").read_text(),
+    long_description_content_type="text/markdown"
 )
