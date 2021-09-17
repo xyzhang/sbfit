@@ -1,5 +1,9 @@
 # SBFit
+-------
 
-Welcome to Sbfit! Sbfit is an X-ray source surface brightness fitting tool. 
+Sbfit is an astronomical X-ray sources surface brightness fitting package. 
+
+## Documentation
+----------------
 See [sbfit.readthedocs.io](https://sbfit.readthedocs.io) for full documentation.
 
