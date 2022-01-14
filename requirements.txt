@@ -1,8 +1,8 @@
 astropy>=4.2
 pyregion>=2.0
-numpy==1.21.0
+numpy==1.20
 scipy
-numba==0.55.0
+numba==0.54
 matplotlib>=3.1
 emcee>=3.0
 corner
