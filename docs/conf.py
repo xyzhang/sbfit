@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.abspath('..'))
 # -- Project information -----------------------------------------------------
 
 project = 'sbfit'
-copyright = '2019-2021, Xiaoyuan Zhang'
+copyright = '2019-2022, Xiaoyuan Zhang'
 author = 'Xiaoyuan Zhang'
 
 # -- General configuration ---------------------------------------------------
@@ -28,7 +28,7 @@ author = 'Xiaoyuan Zhang'
 # ones.
 extensions = ['sphinx.ext.viewcode', 'sphinx.ext.napoleon',
               'myst_parser', 'sphinx.ext.autodoc',
-              # 'sphinx.ext.autosummary',
+              'sphinx.ext.autosummary',
               'sphinx_rtd_theme', 'sphinx_automodapi.automodapi',
               'sphinx.ext.autosectionlabel', 'nbsphinx',
               # 'recommonmark'
