@@ -25,29 +25,49 @@ class BasicModel(Model):
 
     def evaluate(self, *args):
         args = list(args)
-        x = args.pop(0)
+        # check input
+        if self.n_inputs == 1:
+            input = args.pop(0)
+        elif self.n_inputs == 2:
+            input_0 = args.pop(0)
+            input_1 = args.pop(0)
+            input = (input_0, input_1)
+        else:
+            raise Exception("So far only support at most two dimensions.")
+
         pnames = self.param_names
         for i in range(len(args)):
             args[i] = args[i]
         kwargs = dict(zip(pnames, args))
-        if isinstance(x, np.ndarray):
-            y = [self._func(x[i], **kwargs) for i in range(len(x))]
-            return np.array(y)
-        elif isinstance(x, (int, float)):
-            return self._func(x, **kwargs)
+
+        # calculate and output
+        if self.n_inputs == 1:
+            if isinstance(input, np.ndarray):
+                out = [self._func(input[i], **kwargs) for i in range(len(input))]
+                return np.array(out)
+            elif isinstance(input, (int, float)):
+                return self._func(input, **kwargs)
+        elif self.n_inputs == 2:
+            return self._func(*input, **kwargs)
 
 
 def custom_model(func):
     """
     Model class decorator.
     An alternative version of astropy.modeling.custom_model.
-
-
     """
-    return __model_wrapper(func)
+    return __model_wrapper(func, 1)
 
 
-def __model_wrapper(func):
+def custom_model_2D(func):
+    """
+    2D Model class decorator.
+    An alternative version of astropy.modeling.custom_model.
+    """
+    return __model_wrapper(func, 2)
+
+
+def __model_wrapper(func, dimension):
     name = func.__name__
     attr_dict = OrderedDict()
 
@@ -59,7 +79,7 @@ def __model_wrapper(func):
 
     attr_dict.update({"__module__": "model",
                       "__doc__": func.__doc__,
-                      "n_inputs": 1,
+                      "n_inputs": dimension,
                       "n_outputs": 1,
                       "_func": staticmethod(func),
                       })
@@ -126,7 +146,7 @@ def DoublePowerLaw(x, norm=1, a1=0.1, a2=1.0, r=1.0, c=2.0):
 
     Notes
     ----------
-    x, r have a unit of arcsec;
+    xcenter, r have a unit of arcsec;
     n has an arbitrary unit.
 
     References
@@ -277,4 +297,69 @@ def _cone_sb(z, n0, theta, b, c, a1, a2, phi_max):
 
 def _r_cone_sb(z, n0, theta, b, c, a1, a2, phi_max):
     result = z * _cone_sb(z, n0, theta, b, c, a1, a2, phi_max)
+    return result
+
+
+@custom_model_2D
+def Constant2D(x, y, norm=1):
+    result = np.ones_like(x) * norm
+    return result
+
+
+@custom_model_2D
+def Beta2D(x, y, norm=1, xcenter=1, ycenter=1, beta=0.6, r=10):
+    """
+
+    Parameters
+    ----------
+    x : np.ndarray
+        Input x coordinate array.
+    y : np.ndarray
+        Input y coordinate array.
+    norm : number
+        Normalization
+    xcenter : number
+        Center x of the model
+    ycenter : number
+        Center y of the model
+    beta : number
+        Beta parameter
+    r : number
+        Core radius
+
+    """
+    d = np.sqrt((x - xcenter) ** 2 + (y - ycenter) ** 2)
+    result = norm * (1 + (d / r) ** 2) ** (0.5 - 3 * beta)
+    return result
+
+
+@custom_model_2D
+def EllipticBeta2D(x, y, norm=1, xcenter=1, ycenter=1, beta=0.6, rmajor=10, ell=1.2, pa=0):
+    major = rmajor
+    minor = rmajor / ell
+    c = np.sqrt(major ** 2 - minor ** 2)
+    xcenter += 1e-7 * np.random.rand()
+    ycenter += 1e-7 * np.random.rand()
+
+    reference_axis_angle = 0  # major axis angle
+    mask_1 = np.logical_and(x - xcenter >= 0, y - ycenter >= 0)
+    mask_2 = np.logical_and(x - xcenter < 0, y - ycenter >= 0)
+    mask_3 = np.logical_and(x - xcenter < 0, y - ycenter < 0)
+    mask_4 = np.logical_and(x - xcenter >= 0, y - ycenter < 0)
+    azimuth_1 = np.arctan((y - ycenter) / (x - xcenter))
+    azimuth_2 = azimuth_1 + np.pi
+    azimuth_3 = azimuth_1 + np.pi
+    azimuth_4 = azimuth_1 + 2 * np.pi
+    azimuth = azimuth_1 * mask_1 + azimuth_2 * mask_2 + \
+              azimuth_3 * mask_3 + azimuth_4 * mask_4
+    azimuth *= 180 / np.pi
+
+    r_az = np.sqrt(minor ** 2 + c ** 2 / (1 + np.tan(
+        (azimuth - pa) / 180. * np.pi) ** 2 * major ** 2 / minor ** 2))
+    r_angle = np.sqrt(minor ** 2 + c ** 2 / (1 + np.tan(
+        reference_axis_angle / 180. * np.pi) ** 2 * major ** 2 / minor ** 2))
+    r = np.sqrt(
+        (x - xcenter) ** 2 + (y - ycenter) ** 2) / r_az * r_angle
+
+    result = norm * (1 + (r / rmajor) ** 2) ** (0.5 - 3 * beta)
     return result
