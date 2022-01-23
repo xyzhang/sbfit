@@ -4,10 +4,12 @@ This module includes observation classes.
 
 import numpy as np
 from astropy.table import Table, vstack
+from astropy.wcs import WCS
 from astropy import units as u
 
 from .image import CtsImage, ExpImage, BkgImage
 from .profile import Profile
+from .surface import Surface
 from .region import RegionList, ExcludeRegion
 from .utils import get_pixel_scale
 
@@ -265,7 +267,7 @@ class ObservationList(object):
                 region_list.include.get_x_coordinate(image_grid, obs.cts_image.header,
                                                      axis=profile_axis)
 
-            pixel_scale = get_pixel_scale(obs.cts_image.header) * 3600 # arcsec
+            pixel_scale = get_pixel_scale(obs.cts_image.header) * 3600  # arcsec
             if profile_axis == "x":
                 profile_x *= pixel_scale
 
@@ -307,3 +309,42 @@ class ObservationList(object):
         return Profile(raw_profile, pixel_scale=self.pixel_scale,
                        profile_axis=profile_axis, channel_width=channel_width,
                        exposure_unit=self.exposure_unit)
+
+    def get_surface(self, region_list):
+
+        if not isinstance(region_list, RegionList):
+            raise TypeError("region_list must be a RegionList.")
+        else:
+            region_list: RegionList
+
+        stacked_cts_image = np.zeros_like(self._observations[0].cts_image.data)
+        stacked_exp_image = np.zeros_like(stacked_cts_image)
+        stacked_bkg_image = np.zeros_like(stacked_cts_image)
+        for obs in self._observations:
+            obs: Observation
+            stacked_cts_image += obs.cts_image.data
+            stacked_exp_image += obs.exp_image.data
+
+            if obs.bkg_image.norm_type == "count":
+                scaled_bkg_image: np.ndarray = obs.bkg_image.data* \
+                                               obs.bkg_image.bkgnorm
+            elif obs.bkg_image.norm_type == "flux":
+                scaled_bkg_image: np.ndarray = \
+                    obs.bkg_image.data * obs.bkg_image.bkgnorm \
+                    * obs.cts_image.exptime / obs.bkg_image.exptime
+            else:
+                raise ValueError("Norm type must be {'count', 'flux'}.")
+            stacked_bkg_image += scaled_bkg_image
+
+        header = obs.cts_image.header
+        wcs = WCS(header)
+        include_mask = stacked_exp_image > 0
+        for exclude_region in region_list.exclude:
+            exclude_region: ExcludeRegion
+            include_mask = np.logical_and(include_mask, exclude_region.mask(stacked_cts_image, header))
+        stacked_exp_image[np.logical_not(include_mask)] = 0
+
+        surface = Surface(stacked_cts_image, stacked_exp_image, stacked_bkg_image, wcs)
+        return surface
+
+
