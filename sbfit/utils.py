@@ -138,4 +138,21 @@ def get_uncertainty(sample, nbins=None, centroid=None):
     return mode, up_error, low_error
 
 
+def write_fits_image(array, outfile, header=None):
+    """
+    Write an array (image) to a FITS file.
+
+    Parameters
+    ----------
+    array : numpy.ndarray
+        Input array
+    outfile : str
+        Output destination
+    header : astropy.io.fits.Header, optional
+        FITS header to output
+    """
+    hdu = fits.HDUList()
+    hdu.append(fits.ImageHDU(array, header=header))
+    hdu.writeto(outfile, overwrite=True)
+
 
