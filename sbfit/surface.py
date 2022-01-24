@@ -35,10 +35,15 @@ class Surface(object):
         self._residual_image = None
         self._raw_mask = self._exp_image > 0
         self._mask = self._exp_image > 0
+        self._cts_image[~self._raw_mask] = 0
+        self._bkg_image[~self._raw_mask] = 0
         self._calc_flux()
         self._model = None
         self._min_stat = None
         self._error_approx = None
+        self._vorbin_number = None
+        self._vorbin_xcoor = None
+        self._vorbin_ycoor = None
 
     @property
     def redshift(self):
@@ -84,7 +89,7 @@ class Surface(object):
 
     def _calc_flux(self):
         flux_image = (self._cts_image - self._bkg_image) / self._exp_image
-        flux_image[np.where(self._exp_image == 0)] = 0
+        flux_image[~self._raw_mask] = 0
         self._flux_image = flux_image
 
     def _calc_residual(self):
@@ -92,7 +97,7 @@ class Surface(object):
             raise Exception("Please set model first.")
         else:
             residual_image = self._flux_image / self._model_flux_image
-            residual_image[np.logical_not(self._mask)] = 0
+            residual_image[~self._mask] = 0
             self._residual_image = residual_image
 
     def plot(self, image_type="flux", vmin=None, vmax=None):
@@ -162,7 +167,18 @@ class Surface(object):
         else:
             raise Exception("coord_type should be in {'image', 'sky'}.")
 
+        print(f"Set radius {r: d} pixels")
         self._mask = np.logical_and(fit_mask, self._raw_mask)
+
+        # voronoi binning
+        print(f"Start voronoi binning.")
+        y_index, x_index = np.where(self._mask)
+        print(f"X range [{np.min(x_index)}, {np.max(x_index)}], "
+              f"Y range [{np.min(y_index)}, {np.max(y_index)}].")
+        self._vorbin_number, self._vorbin_xcoor, self._vorbin_ycoor = \
+            utils.voronoi(self._cts_image * self._pixel_area, np.min(x_index), np.max(x_index),
+                          np.min(y_index), np.max(y_index), snr=None)
+        print(f"Finish voronoi binning.")
 
     def calculate(self, update=True):
         ysize, xsize = self._flux_image.shape
@@ -349,6 +365,10 @@ class Surface(object):
         return np.mat(deriv_matrix)
 
     def fit_alt(self):
+        if self._vorbin_number is None:
+            raise Exception("Set fit radius first.")
+        else:
+            pass
         pnames_free, pvalues_free = utils.get_free_parameter(self.model)
         p_bounds_low, p_bounds_high = utils.get_parameter_bounds(self.model, pnames_free)
         input_bound = np.array([p_bounds_low, p_bounds_high]).T.tolist()
@@ -358,7 +378,9 @@ class Surface(object):
                                        method="Nelder-Mead",
                                        # method="Powell",
                                        args=(model, pnames_free, self._cts_image,
-                                             self._exp_image, self._bkg_image, self._mask),
+                                             self._exp_image, self._bkg_image, self._mask,
+                                             self._vorbin_xcoor, self._vorbin_ycoor,
+                                             self._vorbin_number),
                                        bounds=input_bound, options={"disp": True, },
                                        )
         # fit_result = optimize.least_squares(self.fit_func, pvalues_free,
@@ -371,19 +393,40 @@ class Surface(object):
         print(fit_result.x)
         for i, pvalue in enumerate(fit_result.x):
             self._model.__setattr__(pnames_free[i], pvalue)
-        stat = self.calculate()
-        dof = self._cts_image[self._mask].size - len(pnames_free)
+        self.calculate()
+        stat = self.vorbin_cstat(self._cts_image, self._model_cts_image, self._mask,
+                                 self._vorbin_xcoor, self._vorbin_ycoor, self._vorbin_number)
+        # dof = self._cts_image[self._mask].size - len(pnames_free)
+        dof = np.int(np.max(self._vorbin_number)) + 1 - len(pnames_free)
         print(f"C-stat / d.o.f = {stat} / {dof}")
 
     @staticmethod
-    def fit_func(params, model, param_names, cts_image, exp_image, bkg_image, mask):
+    def fit_func(params, model, param_names, cts_image, exp_image, bkg_image, mask,
+                 xcoor_filter, ycoor_filter, bin_num):
         ly, lx = cts_image.shape
         xcoor, ycoor = np.meshgrid(np.arange(lx), np.arange(ly))
         for i in range(len(params)):
             model.__setattr__(param_names[i], params[i])
         model_image = model.evaluate(xcoor, ycoor, *model.parameters)
         model_cts_image = model_image * exp_image + bkg_image
-        stat = statistics.cstat(cts_image[mask].flatten(), model_cts_image[mask].flatten())
+        cts_image[~mask] = 0
+        model_cts_image[~mask] = 0
+        cts_array = utils.stat_with_index_2d(cts_image, xcoor_filter, ycoor_filter,
+                                             bin_num, method="sum")
+        model_cts_array = utils.stat_with_index_2d(model_cts_image, xcoor_filter, ycoor_filter,
+                                                   bin_num, method="sum")
+        stat = statistics.cstat(cts_array, model_cts_array)
+        return stat
+
+    @staticmethod
+    def vorbin_cstat(cts_image, model_cts_image, mask, xcoor, ycoor, bin_num):
+        cts_image[~mask] = 0
+        model_cts_image[~mask] = 0
+        cts_array = utils.stat_with_index_2d(cts_image, xcoor, ycoor,
+                                             bin_num, method="sum")
+        model_cts_array = utils.stat_with_index_2d(model_cts_image, xcoor, ycoor,
+                                                   bin_num, method="sum")
+        stat = statistics.cstat(cts_array, model_cts_array)
         return stat
 
     def save_image(self, filename, image_type="flux", smooth=False, width=1):

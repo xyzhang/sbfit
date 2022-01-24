@@ -1,9 +1,11 @@
 import numpy as np
-from scipy import optimize
+import matplotlib.pyplot as plt
+from scipy import stats
 from astropy.io import fits
 from astropy.modeling import Model, Fittable1DModel, Parameter
 from astropy.wcs import WCS
 from astropy.coordinates import SkyCoord
+from vorbin.voronoi_2d_binning import voronoi_2d_binning
 
 
 def load_image(filename, extension=0):
@@ -156,3 +158,70 @@ def write_fits_image(array, outfile, header=None):
     hdu.writeto(outfile, overwrite=True)
 
 
+def voronoi(image, xmin, xmax, ymin, ymax, snr=None, pixsize=1):
+    """
+    Bin the image using voronoi tessellation.
+
+    Parameters
+    ----------
+    image : numpy.ndarray
+        Input image array.
+    xmin : int
+        Lower limit of X.
+    xmax : int
+        Upper limit of X.
+    ymin : int
+        Lower limit of Y.
+    ymax : int
+        Upper limit of Y.
+    snr : number, optional
+        S/N ratio for binning. If set to None, it will be automatically estimated. Default = None
+
+    Returns
+    -------
+    index_array : np.ndarray
+        A 2D array of bin number
+
+
+    """
+    image: np.ndarray
+    image[np.where(image < 0)] = 0
+
+    # set boundary
+    ly, lx = image.shape
+    xmin = np.max([0, xmin])
+    xmax = np.min([lx - 1, xmax])
+    ymin = np.max([0, ymin])
+    ymax = np.min([ly - 1, ymax])
+
+    # set grid
+    xcoor, ycoor = np.meshgrid(np.arange(xmin, xmax + 1),
+                               np.arange(ymin, ymax + 1))
+    filtered_image = image[ymin:ymax + 1, xmin:xmax + 1]
+    xcoor1d = np.ravel(xcoor)
+    ycoor1d = np.ravel(ycoor)
+    signal = np.ravel(filtered_image)
+
+    if snr is None:
+        snr = np.int(np.sqrt(np.sum(filtered_image) / 100))
+    else:
+        pass
+    print(f"Voronoi binning S/N = {snr}.")
+
+    # binning
+    binNum, xNode, yNode, xBar, yBar, sn, nPixels, scale = \
+        voronoi_2d_binning(xcoor1d, ycoor1d, signal, np.sqrt(signal) + 1e-2, snr,
+                           plot=True, pixelsize=pixsize, quiet=True, )
+    index_array = np.zeros_like(filtered_image)
+    index_array[ycoor1d - ymin, xcoor1d - xmin] = binNum
+    plt.show()
+    return index_array, xcoor, ycoor
+
+
+def stat_with_index_2d(input, xcoor, ycoor, bin_number, method="sum"):
+    filtered = input[ycoor, xcoor]
+    bin_number = bin_number.astype(int)
+    statistic, _, _ = stats.binned_statistic(np.ravel(bin_number), np.ravel(filtered),
+                                             statistic=method,
+                                             bins=np.arange(np.max(bin_number) + 1), )
+    return statistic
