@@ -10,7 +10,7 @@ setup(
     url='https://gitlab.sron.nl/asg/x-ray-extended/sbfit',
     license='MIT License',
     install_requires=["numpy<=1.20",
-                      "scipy",
+                      "scipy>=1.7",
                       "numba==0.54",
                       "emcee>=3.0",
                       "astropy>=4.2",
