@@ -527,14 +527,11 @@ class RegionList(object):
 
     """
 
-    _include = IncludeRegion()
-
-    _exclude = []
-
-    _frame = "fk5"
-
     def __init__(self, frame="fk5"):
         self.frame = frame
+        self._include = IncludeRegion()
+        self._exclude = []
+        self._frame = "fk5"
 
     @property
     def include(self):
