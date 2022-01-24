@@ -23,7 +23,7 @@ class Surface(object):
     def __init__(self, stacked_cts_image, stacked_exp_image, stacked_bkg_image, wcs):
         self._wcs: WCS = wcs
         self._redshift = None
-        self._cosmology: astropy.cosmology.Cosmology = Planck18
+        self._cosmology: astropy.cosmology.FlatLambdaCDM = Planck18
         self._pixel_size = np.abs(np.diag(self._wcs.pixel_scale_matrix)[0]) * 60  # arcmin
         self._pixel_area = self._pixel_size ** 2  # arcmin^2
         self._cts_image = stacked_cts_image / self._pixel_area
@@ -150,9 +150,15 @@ class Surface(object):
         if coord_type == "image":
             fit_mask = np.sqrt((xcoor - x) ** 2 + (ycoor - y) ** 2) <= r
         elif coord_type == "sky":
-            sky_coor = SkyCoord(x, y, frame="fk5", unit="degree")
-            im_x, im_y = sky_coor.to_pixel(self._wcs)
-            fit_mask = np.sqrt((xcoor - im_x) ** 2 + (ycoor - im_y) ** 2) <= r  # TODO r
+            if self._redshift is None:
+                raise Exception("Set redshift first.")
+            else:
+                sky_coor = SkyCoord(x, y, frame="fk5", unit="degree")
+                im_x, im_y = sky_coor.to_pixel(self._wcs)
+                kpc_per_arcmin = self._cosmology.kpc_proper_per_arcmin(self._redshift).value
+                kpc_per_pix = kpc_per_arcmin * self._pixel_size
+                r /= kpc_per_pix
+                fit_mask = np.sqrt((xcoor - im_x) ** 2 + (ycoor - im_y) ** 2) <= r
         else:
             raise Exception("coord_type should be in {'image', 'sky'}.")
 
@@ -163,7 +169,7 @@ class Surface(object):
         xcoor, ycoor = np.meshgrid(np.arange(xsize), np.arange(ysize))
         model: Model = self.model
         model_flux = model.evaluate(xcoor, ycoor, *model.parameters)
-        model_flux[np.logical_not(self._mask)] = 0
+        model_flux[np.logical_not(self._raw_mask)] = 0
         model_cts = model_flux * self.exp_image + self.bkg_image
         if update:
             self._model_flux_image = model_flux
@@ -411,3 +417,13 @@ class Surface(object):
 
         header = self._wcs.to_header()
         utils.write_fits_image(out_image, filename, header=header)
+
+    def save_model(self, filename):
+        kernel = convolution.Gaussian2DKernel(25)
+        con_exp = convolution.convolve_fft(self._exp_image, kernel)
+        con_bkg = convolution.convolve_fft(self._bkg_image, kernel)
+        res_cts = con_bkg / con_exp * self._exp_image + self._model_flux_image * self._exp_image
+        res_cts[np.logical_not(self._raw_mask)] = 0
+        res_cts *= self._pixel_area
+        header = self._wcs.to_header()
+        utils.write_fits_image(res_cts, filename, header=header)
