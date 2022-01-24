@@ -310,9 +310,11 @@ class ObservationList(object):
                        profile_axis=profile_axis, channel_width=channel_width,
                        exposure_unit=self.exposure_unit)
 
-    def get_surface(self, region_list):
+    def get_surface(self, region_list=None):
 
-        if not isinstance(region_list, RegionList):
+        if region_list is None:
+            pass
+        elif not isinstance(region_list, RegionList):
             raise TypeError("region_list must be a RegionList.")
         else:
             region_list: RegionList
@@ -339,10 +341,13 @@ class ObservationList(object):
         header = obs.cts_image.header
         wcs = WCS(header)
         include_mask = stacked_exp_image > 0
-        for exclude_region in region_list.exclude:
-            exclude_region: ExcludeRegion
-            include_mask = np.logical_and(include_mask, exclude_region.mask(stacked_cts_image, header))
-        stacked_exp_image[np.logical_not(include_mask)] = 0
+        if region_list is None:
+            pass
+        else:
+            for exclude_region in region_list.exclude:
+                exclude_region: ExcludeRegion
+                include_mask = np.logical_and(include_mask, exclude_region.mask(stacked_cts_image, header))
+            stacked_exp_image[np.logical_not(include_mask)] = 0
 
         surface = Surface(stacked_cts_image, stacked_exp_image, stacked_bkg_image, wcs)
         return surface
