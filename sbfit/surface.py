@@ -167,7 +167,7 @@ class Surface(object):
         else:
             raise Exception("coord_type should be in {'image', 'sky'}.")
 
-        print(f"Set radius {r: d} pixels")
+        print(f"Set radius {int(r): d} pixels")
         self._mask = np.logical_and(fit_mask, self._raw_mask)
 
         # voronoi binning
