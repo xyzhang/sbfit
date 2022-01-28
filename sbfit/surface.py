@@ -1,3 +1,4 @@
+import time
 import warnings
 import copy
 import itertools
@@ -418,14 +419,12 @@ class Surface(object):
         print(pvalues_free, input_bound)
         fit_result = optimize.minimize(self.fit_func, pvalues_free,
                                        method="Nelder-Mead",
-                                       # method="Powell",
                                        args=(model, pnames_free, self._cts_image,
-                                             self._exp_image, self._bkg_image, self._mask,
-                                             # self._vorbin_xcoor, self._vorbin_ycoor,
-                                             # self._vorbin_number
-                                             ),
-                                       bounds=input_bound, options={"disp": True, },
-                                       )
+                                             self._exp_image, self._bkg_image, self._mask,),
+                                       # jac="3-point",
+                                       bounds=input_bound,
+                                       options={"disp": True,
+                                                },)
         # fit_result = optimize.least_squares(self.fit_func, pvalues_free,
         #                                     method="trf", x_scale="jac", loss="linear",
         #                                     args=(model, pnames_free, self._cts_image,
@@ -445,7 +444,7 @@ class Surface(object):
 
     @staticmethod
     def fit_func_vorbin(params, model, param_names, cts_image, exp_image, bkg_image, mask,
-                 xcoor_filter, ycoor_filter, bin_num):
+                        xcoor_filter, ycoor_filter, bin_num):
         ly, lx = cts_image.shape
         xcoor, ycoor = np.meshgrid(np.arange(lx), np.arange(ly))
         for i in range(len(params)):

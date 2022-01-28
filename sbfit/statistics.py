@@ -31,8 +31,8 @@ def cstat(y, y_model):
     mask_0 = y <= 0
     mask_no0 = np.logical_not(mask_0)
 
-    comp1 = 2 * np.sum((y_model - y)[mask_0])
-    comp2 = 2 * np.sum(y_model[mask_no0] - y[mask_no0] +
-                       y[mask_no0] * np.log(y[mask_no0] / y_model[mask_no0]))
+    comp1 = 2 * np.nansum((y_model - y)[mask_0])
+    comp2 = 2 * np.nansum(y_model[mask_no0] - y[mask_no0] +
+                          y[mask_no0] * np.log(y[mask_no0] / y_model[mask_no0]))
     cstat = comp1 + comp2
     return cstat

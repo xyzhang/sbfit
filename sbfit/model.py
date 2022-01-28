@@ -328,7 +328,10 @@ def Beta2D(x, y, norm=1, xcenter=1, ycenter=1, beta=0.6, r=10):
         Core radius
 
     """
-    d = np.sqrt((x - xcenter) ** 2 + (y - ycenter) ** 2)
+    # d = np.sqrt((x - xcenter) ** 2 + (y - ycenter) ** 2)
+    xcenter += 1e-7 * np.random.rand()
+    ycenter += 1e-7 * np.random.rand()
+    d = np.hypot(x - xcenter, y - ycenter)
     result = norm * (1 + (d / r) ** 2) ** (0.5 - 3 * beta)
     return result
 
@@ -337,29 +340,19 @@ def Beta2D(x, y, norm=1, xcenter=1, ycenter=1, beta=0.6, r=10):
 def EllipticBeta2D(x, y, norm=1, xcenter=1, ycenter=1, beta=0.6, rmajor=10, ell=1.2, pa=0):
     major = rmajor
     minor = rmajor / ell
-    c = np.sqrt(major ** 2 - minor ** 2)
+    # c = np.sqrt(major ** 2 - minor ** 2)
+    c = major * (1 - 1 / ell ** 2) ** 0.5
     xcenter += 1e-7 * np.random.rand()
     ycenter += 1e-7 * np.random.rand()
 
-    reference_axis_angle = 0  # major axis angle
-    mask_1 = np.logical_and(x - xcenter >= 0, y - ycenter >= 0)
-    mask_2 = np.logical_and(x - xcenter < 0, y - ycenter >= 0)
-    mask_3 = np.logical_and(x - xcenter < 0, y - ycenter < 0)
-    mask_4 = np.logical_and(x - xcenter >= 0, y - ycenter < 0)
-    azimuth_1 = np.arctan((y - ycenter) / (x - xcenter))
-    azimuth_2 = azimuth_1 + np.pi
-    azimuth_3 = azimuth_1 + np.pi
-    azimuth_4 = azimuth_1 + 2 * np.pi
-    azimuth = azimuth_1 * mask_1 + azimuth_2 * mask_2 + \
-              azimuth_3 * mask_3 + azimuth_4 * mask_4
+    r_to_center = np.hypot(x - xcenter, y - ycenter)
+    azimuth = np.arccos((x - xcenter) / r_to_center)
+    azimuth[y < ycenter] = -azimuth[y < ycenter]
     azimuth *= 180 / np.pi
 
     r_az = np.sqrt(minor ** 2 + c ** 2 / (1 + np.tan(
-        (azimuth - pa) / 180. * np.pi) ** 2 * major ** 2 / minor ** 2))
-    r_angle = np.sqrt(minor ** 2 + c ** 2 / (1 + np.tan(
-        reference_axis_angle / 180. * np.pi) ** 2 * major ** 2 / minor ** 2))
-    r = np.sqrt(
-        (x - xcenter) ** 2 + (y - ycenter) ** 2) / r_az * r_angle
+        (azimuth - pa) / 180. * np.pi) ** 2 * ell ** 2))
+    r = r_to_center / r_az * major
 
     result = norm * (1 + (r / rmajor) ** 2) ** (0.5 - 3 * beta)
     return result
