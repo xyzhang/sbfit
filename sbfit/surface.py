@@ -182,11 +182,27 @@ class Surface(object):
         #                   np.min(y_index), np.max(y_index), snr=None)
         # print(f"Finish voronoi binning.")
 
-    def evaluate_pa(self, smooth_width=10, redshift=0.1, r_in=100, r_out=200):
+    def evaluate_pa(self, smooth_width=10, r_in=100, r_out=200):
+        """
+        Estimate position angle of ellipsoid.
+
+        Parameters
+        ----------
+        smooth_width : number, optional
+            Gaussian smoothing width. Default = 10 pixel.
+        r_in : number, optional
+            Inner radius for estimation. Default = 100 kpc.
+        r_out : number, optional
+            Outer radius for estimation. Default = 200 kpc
+
+        Returns
+        -------
+
+        """
         kernel = convolution.Gaussian2DKernel(smooth_width)
         smoothed_flux = convolution.convolve_fft(self._flux_image, kernel)
         cy, cx = np.unravel_index(smoothed_flux.argmax(), smoothed_flux.shape)
-        kpc_per_pixel = self._pixel_size * Planck18.kpc_proper_per_arcmin(redshift).value
+        kpc_per_pixel = self._pixel_size * Planck18.kpc_proper_per_arcmin(self.redshift).value
         panda_reg = Panda()
         panda_reg.frame = "image"
         panda_reg.set_parameters(x=cx + 1e-5, y=cy + 1e-5, startangle=0, stopangle=180,
