@@ -8,6 +8,7 @@ import astropy.cosmology
 import numpy as np
 from scipy import optimize
 from scipy import stats
+from scipy.ndimage.filters import gaussian_filter
 from matplotlib import pyplot as plt
 from astropy.modeling import Model
 from astropy.wcs import WCS
@@ -32,6 +33,10 @@ class Surface(object):
         self._cts_image = stacked_cts_image / self._pixel_area
         self._exp_image = stacked_exp_image
         self._bkg_image = stacked_bkg_image / self._pixel_area  # todo for sanity
+        gaussian_kernel = convolution.Gaussian2DKernel(20)
+        smoothed_bkg_image = convolution.convolve_fft(self._bkg_image, gaussian_kernel)
+        smoothed_exp_image = convolution.convolve_fft(self._exp_image, gaussian_kernel)
+        self._smoothed_bkg_image = smoothed_bkg_image / smoothed_exp_image * self._exp_image
         self._flux_image = np.zeros_like(self._cts_image)
         self._model_cts_image = None
         self._model_flux_image = None
@@ -40,6 +45,7 @@ class Surface(object):
         self._mask = self._exp_image > 0
         self._cts_image[~self._raw_mask] = 0
         self._bkg_image[~self._raw_mask] = 0
+        self._smoothed_bkg_image[~self._raw_mask] = 0
         self._calc_flux()
         self._model = None
         self._min_stat = None
@@ -228,8 +234,12 @@ class Surface(object):
         xcoor, ycoor = np.meshgrid(np.arange(xsize), np.arange(ysize))
         model: Model = self.model
         model_flux = model.evaluate(xcoor, ycoor, *model.parameters)
-        model_flux[np.logical_not(self._raw_mask)] = 0
-        model_cts = model_flux * self.exp_image + self.bkg_image
+        model_flux[~self._raw_mask] = 0
+        model_cts = model_flux * self.exp_image + self._smoothed_bkg_image
+        plt.imshow(model_cts)
+        plt.show()
+        plt.imshow(self.cts_image)
+        plt.show()
         if update:
             self._model_flux_image = model_flux
             self._model_cts_image = model_cts
@@ -420,11 +430,11 @@ class Surface(object):
         fit_result = optimize.minimize(self.fit_func, pvalues_free,
                                        method="Nelder-Mead",
                                        args=(model, pnames_free, self._cts_image,
-                                             self._exp_image, self._bkg_image, self._mask,),
+                                             self._exp_image, self._smoothed_bkg_image, self._mask,),
                                        # jac="3-point",
                                        bounds=input_bound,
-                                       options={"disp": True,
-                                                },)
+                                       options={"disp": True, "fatol":0.1,
+                                                }, )
         # fit_result = optimize.least_squares(self.fit_func, pvalues_free,
         #                                     method="trf", x_scale="jac", loss="linear",
         #                                     args=(model, pnames_free, self._cts_image,
@@ -507,6 +517,8 @@ class Surface(object):
             out_image = self._model_cts_image * self._pixel_area
         elif image_type == "residual":
             out_image = self._residual_image
+        elif image_type == "smoothed_bkg":
+            out_image = self._smoothed_bkg_image * self._pixel_area
         if smooth:
             kernel = convolution.Gaussian2DKernel(width)
             con_image = convolution.convolve(out_image, kernel)
@@ -518,8 +530,10 @@ class Surface(object):
 
     def save_model(self, filename):
         kernel = convolution.Gaussian2DKernel(25)
-        con_exp = convolution.convolve_fft(self._exp_image, kernel)
-        con_bkg = convolution.convolve_fft(self._bkg_image, kernel)
+        # con_exp = convolution.convolve_fft(self._exp_image, kernel)
+        # con_bkg = convolution.convolve_fft(self._bkg_image, kernel)
+        con_exp = gaussian_filter(self._exp_image, 25)
+        con_bkg = gaussian_filter(self._bkg_image, 25)
         res_cts = con_bkg / con_exp * self._exp_image + self._model_flux_image * self._exp_image
         res_cts[np.logical_not(self._raw_mask)] = 0
         res_cts *= self._pixel_area
