@@ -236,10 +236,6 @@ class Surface(object):
         model_flux = model.evaluate(xcoor, ycoor, *model.parameters)
         model_flux[~self._raw_mask] = 0
         model_cts = model_flux * self.exp_image + self._smoothed_bkg_image
-        plt.imshow(model_cts)
-        plt.show()
-        plt.imshow(self.cts_image)
-        plt.show()
         if update:
             self._model_flux_image = model_flux
             self._model_cts_image = model_cts
